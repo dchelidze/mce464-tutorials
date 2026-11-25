@@ -84,3 +84,6 @@ footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--rule);font-si
 #gal,.galb{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}#gal button,.galb button{margin:0!important;padding:4px 8px;font-size:12.5px}
 .galb button.on{background:var(--copper);color:#fff}
 .card .v2{color:var(--ink);letter-spacing:.06em}
+footer .copy{display:block;margin-top:10px;font-size:12px;overflow-wrap:anywhere}
+.cite pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12.5px;background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:10px 12px}
+.cite pre.bib{white-space:pre;overflow-wrap:normal;overflow-x:auto}

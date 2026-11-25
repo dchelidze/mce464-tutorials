@@ -71,7 +71,7 @@ The full area, \(t\to\infty\), is \(1/(m\omega_n^2)=1/k\): the static deflection
 <details><summary>What limits the accuracy of the discrete sum, and what is the rule of thumb?</summary>
 <p>The time step must resolve both the load and the kernel's oscillation. Use \(\Delta t\) well below the damped period \(2\pi/\omega_d\) (about a tenth of it or smaller) and below the shortest feature of \(f\). Check it the standard way: halve \(\Delta t\) and confirm the response does not change, and compare with a direct ODE integration.</p></details>
 
-<footer>Slides: Lecture 16 (ideal impulse, impulse response), Lecture 17 (Duhamel integral, causality, step response, discrete convolution, time-step error). Units: \(m=1\), \(\omega_n=1\). Labels inside the plots are plain text; the equations on the page are typeset with KaTeX.</footer>
+<footer>Slides: Lecture 16 (ideal impulse, impulse response), Lecture 17 (Duhamel integral, causality, step response, discrete convolution, time-step error). Units: \(m=1\), \(\omega_n=1\). Labels inside the plots are plain text; the equations on the page are typeset with KaTeX.<span class="copy">&copy; 2026 David Chelidze, Nonlinear Dynamics Laboratory, University of Rhode Island. All rights reserved. Cite as: D. Chelidze, &ldquo;Tutorial 7: Convolution as Superposition,&rdquo; in <i>MCE 464 Geometric Tutorials</i>, Univ. of Rhode Island, 2026. [Online]. Available: <a href="https://dchelidze.github.io/mce464-tutorials/T07_convolution_L16-17.html">https://dchelidze.github.io/mce464-tutorials/T07_convolution_L16-17.html</a></span></footer>
 </div>
 
 <script src="assets/katex/katex.min.js"></script>

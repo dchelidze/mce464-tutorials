@@ -18,6 +18,29 @@ Interactive companions to the lecture slides of MCE 464 Vibrations (Fall 2026) a
 
 The pages need no build step and no network: open `index.html` locally or serve the folder.
 
-## License
+## How to cite
 
-Copyright (c) 2026 David Chelidze, Nonlinear Dynamics Laboratory, University of Rhode Island. All rights reserved. KaTeX is distributed under its own MIT licence (`assets/katex/LICENSE`).
+GitHub's **Cite this repository** button (from `CITATION.cff`) gives APA and BibTeX. The same entries:
+
+**IEEE**
+D. Chelidze, *MCE 464 Geometric Tutorials: Interactive Companions to Vibrations Lectures*. Nonlinear Dynamics Laboratory, Univ. of Rhode Island, 2026. [Online]. Available: https://dchelidze.github.io/mce464-tutorials/
+
+**APA**
+Chelidze, D. (2026). *MCE 464 geometric tutorials: Interactive companions to vibrations lectures* [Interactive web tutorials]. Nonlinear Dynamics Laboratory, University of Rhode Island. https://dchelidze.github.io/mce464-tutorials/
+
+**BibTeX**
+```bibtex
+@misc{chelidze2026mce464,
+  author       = {Chelidze, David},
+  title        = {{MCE} 464 Geometric Tutorials: Interactive Companions to Vibrations Lectures},
+  year         = {2026},
+  howpublished = {\url{https://dchelidze.github.io/mce464-tutorials/}},
+  note         = {Nonlinear Dynamics Laboratory, University of Rhode Island. Interactive web tutorials}
+}
+```
+
+A single tutorial: D. Chelidze, "Tutorial 5: One Curve, Many Machines," in *MCE 464 Geometric Tutorials*, Univ. of Rhode Island, 2026. [Online]. Available: the page's URL. Each page's footer carries its own citation line.
+
+## Copyright and license
+
+Copyright (c) 2026 David Chelidze, Nonlinear Dynamics Laboratory, University of Rhode Island. All rights reserved. The pages may be viewed, linked to and cited freely; copying, modifying or redistributing them requires written permission. KaTeX is distributed under its own MIT licence (`assets/katex/LICENSE`).

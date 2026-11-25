@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use these tutorials, please cite them as below."
+type: software
+title: "MCE 464 Geometric Tutorials: Interactive Companions to Vibrations Lectures"
+authors:
+  - family-names: Chelidze
+    given-names: David
+    affiliation: "Nonlinear Dynamics Laboratory, University of Rhode Island"
+date-released: 2026-11-24
+url: "https://dchelidze.github.io/mce464-tutorials/"
+repository-code: "https://github.com/dchelidze/mce464-tutorials"
+license-url: "https://github.com/dchelidze/mce464-tutorials#copyright-and-license"
+keywords:
+  - vibrations
+  - structural dynamics
+  - modal analysis
+  - interactive tutorials
+  - engineering education

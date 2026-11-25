@@ -8,8 +8,8 @@ Interactive companions to the lecture slides of MCE 464 Vibrations (Fall 2026) a
 
 ```text
 .
-├── index.html     # hub: Tutorials 1-14, plus the version 1 pages
-├── T01_...html    # one self-contained page per tutorial (_v2 = current version)
+├── index.html     # hub: Tutorials 1-14
+├── T01_...html    # one self-contained page per tutorial (_v2 = revised version)
 ├── assets/
 │   ├── style.css, layout.js, phonebar.js, math.js, lib.js, lib3d.js
 │   └── katex/     # KaTeX 0.16.9, bundled (MIT, see assets/katex/LICENSE)

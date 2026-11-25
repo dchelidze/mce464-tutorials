@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tutorial 6: Dissipation Loops and Nonlinear FRF</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<link rel="stylesheet" href="assets/style.css">
+<style>/* phone width (sidebar stacked): a wide display equation scrolls inside its own box instead of widening the page; the padding keeps tall delimiters unclipped */@media (max-width:980px){.katex-display{overflow-x:auto;overflow-y:hidden;padding:.45em 0}}</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <nav class="tn"><a href="index.html">All tutorials</a><a href="T05_frf_family_L13-14.html">&larr; Tutorial 5</a><a href="T07_convolution_L16-17.html">Next: Tutorial 7 &rarr;</a></nav>
+  <div class="kicker">MCE 464 &middot; Tutorial 6 &middot; Lecture 15</div>
+  <h1>Dissipation Loops and the Nonlinear FRF</h1>
+  <p class="lede">Every damping model is a closed loop in the force&ndash;displacement plane, and the loop area is the energy lost per cycle. Its dependence on amplitude and frequency decides how the frequency response bends, jumps and depends on the sweep direction.</p>
+</div></header>
+<div class="wrap">
+
+<h2>1. The energy lost per cycle is an area</h2>
+<p>For steady motion \(x=X\cos\Omega t\), the damping force \(F_d\) traces a closed curve against \(x\). The work it removes per cycle is the enclosed area,
+$$ \Delta W=\oint F_d\,\mathrm dx. $$
+Four models, scaled here to lose the <em>same</em> energy \(W_0\) per cycle at \(X=1\) and \(r=\Omega/\omega_n=1\), so that their different <em>scaling</em> is what you see:</p>
+<table class="ro" style="max-width:900px">
+  <tr><th style="width:22%">Model</th><th style="width:30%">Damping force</th><th>\(\Delta W\)</th><th>Loop shape</th></tr>
+  <tr><td><span class="sw" style="background:#0072BD"></span>Viscous</td><td>\(c\dot x\)</td><td>\(\pi c\Omega X^2=W_0\,rX^2\)</td><td>ellipse</td></tr>
+  <tr><td><span class="sw" style="background:#D95319"></span>Structural</td><td>\(\eta k\,\dot x/\Omega\)</td><td>\(\pi\eta kX^2=W_0X^2\)</td><td>ellipse</td></tr>
+  <tr><td><span class="sw" style="background:#67355C"></span>Coulomb</td><td>\(\mu N\,\mathrm{sgn}\,\dot x\)</td><td>\(4\mu NX=W_0X\)</td><td>rectangle</td></tr>
+  <tr><td><span class="sw" style="background:#055432"></span>Quadratic drag</td><td>\(c_2|\dot x|\dot x\)</td><td>\(\tfrac83c_2\Omega^2X^3=W_0\,r^2X^3\)</td><td>fat, pointed</td></tr>
+</table>
+
+<div class="ctl">
+  <div><label>Amplitude \(X\)<output id="X_o"></output><input type="range" id="X" min="0.1" max="2" step="0.01" value="1"></label></div>
+  <div><label>Frequency ratio \(r\)<output id="r_o"></output><input type="range" id="r" min="0.2" max="2" step="0.01" value="1"></label></div>
+  <div><label>Loss at \(X=1,\,r=1\): \(W_0\)<output id="W0_o"></output><input type="range" id="W0" min="0.05" max="1" step="0.01" value="0.2"></label></div>
+</div>
+<div class="figs">
+  <div class="fig"><div class="ttl">Hysteresis loops \((x,F_d)\)</div><canvas id="cl" data-ar="0.82"></canvas>
+    <div class="cap">Same \(X\) and \(\Omega\) for all four. The area inside each loop is the energy lost per cycle. Change \(X\) and \(r\) and watch which loops grow.</div></div>
+  <div class="fig"><div class="ttl">Loss against amplitude (log&ndash;log)</div><canvas id="cx" data-ar="0.82"></canvas>
+    <div class="cap">Slopes: Coulomb 1, viscous and structural 2, quadratic 3. Dots show your \(X\).</div></div>
+  <div class="fig"><div class="ttl">Loss against frequency (log&ndash;log)</div><canvas id="cr" data-ar="0.82"></canvas>
+    <div class="cap">Slopes: viscous 1, quadratic 2, structural and Coulomb 0. Dots show your \(r\).</div></div>
+</div>
+<div class="figs"><div class="fig"><div class="ttl">Numerical areas at this \(X\) and \(r\)</div><table class="ro" id="ar"></table></div></div>
+
+<h2>2. From loss to the frequency response</h2>
+<p>Add a Duffing spring, \(\ddot x+F_d+x+\varepsilon x^3=f\cos\Omega t\), with \(\omega_n=1\). Keep only the fundamental harmonic (harmonic balance). Each loop then acts as an <em>amplitude-dependent equivalent damping</em> \(G(X,r)\): the fundamental-harmonic damping force is in phase with the velocity (in quadrature with the displacement), and \(G\) is its amplitude per unit displacement amplitude:
+$$ \Bigl[\bigl(1-r^2+\tfrac34\varepsilon X^2\bigr)^2+G(X,r)^2\Bigr]X^2=f^2,\qquad G=\frac{W_0}{\pi}\times\bigl\{\,r,\;1,\;1/X,\;r^2X\,\bigr\}. $$
+The stiffness term \(\tfrac34\varepsilon X^2\) bends the resonance (the backbone \(r^2=1+\tfrac34\varepsilon X^2\)), and \(G\) sets its height. For each \(r\) the equation can have one or three amplitudes. Where there are three, the middle branch is unstable (it is the one the sweeps never land on), and the response depends on <em>which way you sweep</em>: it follows the nearest stable branch until that branch ends, then jumps.</p>
+<div class="ctl">
+  <div><label>Damping model<select id="typ" class="gal"><option value="0">Viscous</option><option value="1">Structural</option><option value="2">Coulomb</option><option value="3">Quadratic drag</option></select></label></div>
+  <div><label>Forcing \(f\)<output id="f_o"></output><input type="range" id="f" min="0.01" max="0.3" step="0.005" value="0.1" data-dp="3"></label></div>
+  <div><label>Cubic stiffness \(\varepsilon\)<output id="eps_o"></output><input type="range" id="eps" min="-0.4" max="1" step="0.01" value="0.5"></label></div>
+  <div><label class="chk"><input type="checkbox" id="all" checked> show all solution branches (grey)</label></div>
+</div>
+<div class="figs" style="grid-template-columns:1fr">
+  <div class="fig"><div class="ttl">Amplitude response \(X(r)\)</div><canvas id="cf" data-ar="0.45"></canvas>
+    <div class="cap"><span class="sw" style="background:#0072BD"></span>sweep up (increasing \(\Omega\)) &nbsp; <span class="sw" style="background:#D95319"></span>sweep down &nbsp; <span class="sw" style="background:#b5632c"></span>backbone \(r^2=1+\tfrac34\varepsilon X^2\) &nbsp; grey: all solutions of the harmonic-balance equation; the middle branch is unstable (it is the one the sweeps never land on).</div></div>
+</div>
+<div class="figs"><div class="fig"><div class="ttl">Read-out</div><table class="ro" id="fr"></table></div>
+  <div class="fig"><div class="ttl">What to notice</div>
+    <ol style="margin:4px 0 0 18px;padding:0">
+      <li>With \(\varepsilon=0\) the four models give different peak heights and shapes: Coulomb loss matters most at small amplitude, quadratic drag matters most at large amplitude, and for quadratic drag the small-amplitude limit is lossless.</li>
+      <li>Raise \(\varepsilon>0\): the peak leans right (hardening). Once the lean exceeds the width set by \(G\), a three-valued region appears and the sweeps separate.</li>
+      <li>Lower \(f\) or raise \(W_0\): damping beats the lean and the hysteresis closes. Negative \(\varepsilon\) (softening) leans left and reverses which sweep jumps up.</li>
+      <li>Coulomb: friction removes \(4F_cX\) per cycle, the drive at most \(\pi fX\). Both grow like \(X\), so harmonic balance gives motion only if \(f>W_0/\pi\); below that the mass sticks. Above it, with \(\varepsilon=0\), \(X=\sqrt{f^2-(W_0/\pi)^2}\,/\,|1-r^2|\), which is unbounded at \(r=1\): friction cannot limit a resonance. Try \(f=0.05\), then \(f=0.1\) with \(\varepsilon=0\).</li>
+    </ol></div></div>
+
+<h2>3. Free decay under the damping models</h2>
+<p>Release the oscillator \(\ddot x+x+F_d=0\) from \(x_0=1,\ v_0=0\) and integrate with RK4 (step \(h=0.002\)). The three models use the forces of Section 1, so they lose the same energy \(W_0\) per cycle at \(X=1\): \(c=W_0/\pi\), \(F_c=W_0/4\), \(c_2=3W_0/8\). Averaging the energy loss over one cycle, \(\mathrm d(\tfrac12X^2)/\mathrm dt=-\Delta W(X)/2\pi\), gives the envelopes, all with the same initial slope \(a=W_0/2\pi\):
+$$ \text{viscous: } X=e^{-at},\qquad \text{Coulomb: } X=1-at,\qquad \text{quadratic: } X=\frac{1}{1+at}. $$
+Coulomb damping loses a fixed \(4F_c/k\) of amplitude per cycle, so the envelope is a straight line. Each half-cycle is undamped motion about a shifted centre, \(x=+F_c/k\) while moving left and \(x=-F_c/k\) while moving right, so in the phase plane it is an arc of a circle centred at \(\pm F_c/k\). The mass stops for good at the first turning point inside the dead zone \(|x|\le F_c/k\), where the spring cannot overcome friction: a finite stopping time, a whole number of half-periods. Viscous and quadratic decays never stop in finite time; quadratic drag fades fast at large amplitude and slowly at small amplitude.</p>
+<p>Structural (hysteretic) damping is not shown. Its force \(\eta k\,\dot x/\Omega\) is defined only for harmonic motion at a given \(\Omega\); a frequency-independent loss has no causal time-domain model, so it has no free decay to integrate.</p>
+<div class="ctl" data-title="Free decay">
+  <div><label>Time marker \(t\)<output id="tm_o"></output><input type="range" id="tm" min="0" max="1" step="0.002" value="0.25" data-dp="3"></label></div>
+  <div><label class="chk"><input type="checkbox" id="env" checked> show envelopes and dead zone</label></div>
+  <div><button id="tplay">Play</button></div>
+</div>
+<div class="figs">
+  <div class="fig"><div class="ttl">Free decay \(x(t)\)</div><canvas id="ct" data-ar="0.62"></canvas>
+    <div class="cap"><span class="sw" style="background:#0072BD"></span>viscous &nbsp; <span class="sw" style="background:#67355C"></span>Coulomb &nbsp; <span class="sw" style="background:#055432"></span>quadratic drag. Dashed: the envelopes above. Shaded band: Coulomb dead zone \(|x|\le F_c/k\). The slider \(W_0\) in Section 1 sets all three. The marker slider runs from 0 to the end of the window.</div></div>
+  <div class="fig"><div class="ttl">Phase portrait \((x,\dot x)\)</div><canvas id="cp" data-ar="0.62"></canvas>
+    <div class="cap">Same three decays. Plum dots: the Coulomb arc centres \(x=\pm F_c/k\). Viscous and quadratic spiral into the origin; Coulomb runs on circle arcs and stops on the segment \(|x|\le F_c/k\).</div></div>
+</div>
+<div class="figs"><div class="fig"><div class="ttl">Read-out (free decay)</div><table class="ro" id="dr"></table></div></div>
+
+<h2>4. Check yourself</h2>
+<details><summary>Why can a Coulomb-damped system not be described by a single damping ratio?</summary>
+<p>Its equivalent damping \(G=4\mu N/(\pi X)\) depends on amplitude: small motion is damped heavily, large motion lightly, so the "damping ratio" is a function of the response itself.</p></details>
+<details><summary>The structural loop has the same area at every frequency. How does the FRF differ from the viscous one?</summary>
+<p>Viscous loss grows with \(r\), so it is large above resonance and small below. Structural loss is flat, so the force in quadrature with the displacement does not vanish at low \(r\) and the phase leaves zero immediately.</p></details>
+<details><summary>Why does the sweep-up curve jump <em>down</em> while the sweep-down curve jumps <em>up</em> for a hardening spring?</summary>
+<p>The branches are connected by an unstable middle branch and bounded by two turning points. Sweeping up, the upper branch ends at the right turning point and the amplitude drops to the lower branch. Sweeping down, the lower branch ends at the left turning point and the amplitude rises to the upper branch.</p></details>
+
+<footer>Slides: Lecture 15 (structural damping, equivalent viscous model, Coulomb friction, quadratic drag, dissipation to FRF, frequency grid, nonlinear FRF, sweep direction). The harmonic-balance curve uses only the fundamental; it is an approximation, accurate for light damping and moderate nonlinearity. Labels in the plots are plain text; equations are typeset with KaTeX.</footer>
+</div>
+
+<script src="assets/katex/katex.min.js"></script>
+<script src="assets/katex/auto-render.min.js"></script>
+<script src="assets/math.js"></script>
+<script src="assets/phonebar.js"></script>
+<script src="assets/layout.js"></script>
+<script src="assets/lib.js"></script>
+<script>
+(function(){
+const {ro,TeX,C,Plot,bind,val,TAU}=TUT;
+const S=id=>document.getElementById(id);
+const COL=[C.blue,C.orange,C.plum,C.green],NAME=['viscous','structural','Coulomb','quadratic'];
+const pl=new Plot(S('cl'),{pad:[48,12,12,36]});
+const px=new Plot(S('cx'),{pad:[52,12,12,36],xlog:true,ylog:true,xmin:0.1,xmax:2,ymin:1e-4,ymax:10});
+const pr=new Plot(S('cr'),{pad:[52,12,12,36],xlog:true,ylog:true,xmin:0.2,xmax:2,ymin:1e-3,ymax:10});
+const pf=new Plot(S('cf'),{pad:[52,12,12,36],xmin:0.3,xmax:1.8,ymin:0,ymax:1});
+const DW=(k,X,r,W0)=>[W0*r*X*X,W0*X*X,W0*X,W0*r*r*X*X*X][k];
+function loopF(k,th,X,r,W0){const xd=-X*r*Math.sin(th);
+  return [W0/Math.PI*xd,W0/Math.PI*(-X*Math.sin(th)),W0/4*Math.sign(xd),3*W0/8*Math.abs(xd)*xd][k];}
+function drawLoops(){
+  const X=val('X'),r=val('r'),W0=val('W0'),N=720;
+  const loops=[0,1,2,3].map(k=>{const xs=[],ys=[];for(let i=0;i<=N;i++){const th=TAU*i/N;xs.push(X*Math.cos(th));ys.push(loopF(k,th+1e-9,X,r,W0));}return [xs,ys];});
+  let Fm=0.05;loops.forEach(l=>l[1].forEach(v=>Fm=Math.max(Fm,Math.abs(v))));
+  pl.set({xmin:-2.2,xmax:2.2,ymin:-Fm*1.15,ymax:Fm*1.15});pl.begin();pl.axes({zero:true,xlabel:'x',ylabel:'damping force'});
+  loops.forEach((l,k)=>pl.line(l[0],l[1],COL[k],2.4));
+  const area=[];loops.forEach((l,k)=>{let a=0;for(let i=0;i<N;i++)a+=l[0][i]*l[1][i+1]-l[0][i+1]*l[1][i];area.push(Math.abs(a)/2);});
+  // curves
+  px.begin();px.axes({xlabel:'amplitude X',ylabel:'ΔW per cycle'});
+  const Xs=[];for(let i=0;i<=100;i++)Xs.push(0.1*Math.pow(20,i/100));
+  [0,1,2,3].forEach(k=>{px.line(Xs,Xs.map(x=>DW(k,x,r,W0)),COL[k],2.4);px.dot(X,DW(k,X,r,W0),COL[k],5.5,'#fff');});
+  pr.begin();pr.axes({xlabel:'r = Ω/ωn',ylabel:'ΔW per cycle'});
+  const Rs=[];for(let i=0;i<=100;i++)Rs.push(0.2*Math.pow(10,i/100));
+  [0,1,2,3].forEach(k=>{pr.line(Rs,Rs.map(q=>DW(k,X,q,W0)),COL[k],2.4);pr.dot(r,DW(k,X,r,W0),COL[k],5.5,'#fff');});
+  S('ar').innerHTML=[0,1,2,3].map(k=>'<tr><th><span class="sw" style="background:'+COL[k]+'"></span>'+NAME[k]+'</th><td>loop area '+area[k].toFixed(4)+'   (formula '+DW(k,X,r,W0).toFixed(4)+')</td></tr>').join('');
+}
+function G(k,X,r,W0){return W0/Math.PI*[r,1,1/X,r*r*X][k];}
+function roots(r,k,f,eps,W0){
+  const out=[],n=800,x0=1e-3,x1=6;let px_=null,ph=null;
+  for(let i=0;i<=n;i++){const X=x0*Math.pow(x1/x0,i/n),g=G(k,X,r,W0),a=1-r*r+0.75*eps*X*X,h=(a*a+g*g)*X*X-f*f;
+    if(ph!==null&&((ph<0&&h>=0)||(ph>0&&h<=0))){const t=ph/(ph-h);out.push(px_*Math.pow(X/px_,t));}
+    px_=X;ph=h;}
+  return out;}
+function drawFRF(){
+  const k=+S('typ').value,f=val('f'),eps=val('eps'),W0=val('W0');
+  const rg=[];const M=420;for(let i=0;i<=M;i++)rg.push(0.3+1.5*i/M);
+  const R=rg.map(r=>roots(r,k,f,eps,W0));
+  let ymax=0.1;R.forEach(a=>a.forEach(v=>ymax=Math.max(ymax,v)));
+  pf.set({ymax:ymax*1.1});pf.begin();pf.axes({xlabel:'r = Ω/ωn',ylabel:'response amplitude X'});
+  if(S('all').checked){const ax=[],ay=[];R.forEach((a,i)=>a.forEach(v=>{ax.push(rg[i]);ay.push(v);}));
+    const g=pf.g;g.save();pf.clip();g.fillStyle='rgba(120,116,104,.45)';ax.forEach((x,i)=>{g.beginPath();g.arc(pf.X(x),pf.Y(ay[i]),1.5,0,TAU);g.fill();});pf.unclip();g.restore();}
+  const Xb=[],rb=[];for(let i=0;i<=200;i++){const X=ymax*1.1*i/200;Xb.push(X);rb.push(Math.sqrt(Math.max(0,1+0.75*eps*X*X)));}
+  pf.line(rb,Xb,C.copper,1.5,[6,4]);
+  const sweep=(idx)=>{const out=new Array(rg.length).fill(NaN);let prev=null;
+    idx.forEach(i=>{const a=R[i];if(!a.length){prev=null;return;}
+      const stab=a.length>=3?[a[0],a[a.length-1]]:a;let pick=stab[0];
+      if(prev!==null){pick=stab.reduce((b,v)=>Math.abs(v-prev)<Math.abs(b-prev)?v:b,stab[0]);}else{pick=stab[0];}
+      out[i]=pick;prev=pick;});return out;};
+  const up=sweep(rg.map((_,i)=>i)),dn=sweep(rg.map((_,i)=>rg.length-1-i));
+  pf.line(rg,dn,C.orange,3.2);pf.line(rg,up,C.blue,3.2);
+  const jump=a=>{let best={d:0,r:NaN,from:NaN,to:NaN};for(let i=1;i<a.length;i++){if(isFinite(a[i])&&isFinite(a[i-1])){const d=Math.abs(a[i]-a[i-1]);if(d>best.d&&d>0.15*ymax)best={d,r:rg[i],from:a[i-1],to:a[i]};}}return best;};
+  const ju=jump(up),jd=jump(dn);
+  const pk=a=>{const b=a.filter(isFinite);return b.length?Math.max(...b):NaN;};
+  const n3=v=>isFinite(v)?v.toFixed(3):'&mdash;';
+  const thr=W0/Math.PI,nr=R.reduce((s,a)=>s+a.length,0);
+  const stuck=(k===2&&f<=thr);            // Coulomb: friction force exceeds the drive
+  const unb=(k===2&&!stuck&&eps>=0);      // Coulomb above threshold: resonant branch unbounded
+  if(stuck){
+    pf.text('Drive below the friction threshold: f = '+f.toFixed(3)+' ≤ W₀/π = '+thr.toFixed(4),1.05,0.068,C.red,{align:'center',size:15,bold:true});
+    pf.text('The mass sticks; harmonic balance gives no motion (X = 0).',1.05,0.048,C.red,{align:'center',size:14});
+  }else if(!nr){
+    pf.text('No harmonic-balance solution in this range.',1.05,0.06,C.red,{align:'center',size:14});
+  }else if(unb&&eps===0){
+    pf.line([1,1],[0,ymax*1.1],C.plum,1.2,[3,4]);
+    pf.text('X → ∞ at r = 1: friction cannot limit the resonance (plot cut at X = 6)',1.02,ymax*0.97,C.plum,{size:13});
+  }
+  const wid=NAME[k],rows=[['Model',wid+'  ('+TeX('G=(W_0/\\pi)\\times '+['r','1','1/X','r^2X'][k])+')']];
+  if(k===2)rows.push(['Friction threshold \\(W_0/\\pi\\)',thr.toFixed(4)+(stuck?'  (drive is below it)':'  (drive is above it)')]);
+  if(stuck){
+    const msg='drive below the friction threshold '+TeX('f'+(f<thr?'\\lt ':'=')+'W_0/\\pi='+thr.toFixed(4))+': the mass sticks; harmonic balance gives no motion';
+    rows.push(['Peak amplitude, sweep up',msg],['Peak amplitude, sweep down','&mdash; (no motion)'],['Jump on sweep up','none (no motion)'],['Jump on sweep down','none (no motion)']);
+  }else{
+    const jtxt=j=>isFinite(j.r)?'at '+TeX('r\\approx '+j.r.toFixed(3))+',  '+TeX('X:\\ '+j.from.toFixed(2)+'\\to '+j.to.toFixed(2)):'none in the plotted range';
+    if(unb&&eps===0){
+      rows.push(['Peak amplitude, sweep up','unbounded: '+TeX('X=\\sqrt{f^2-(W_0/\\pi)^2}/|1-r^2|\\to\\infty')+' at '+TeX('r=1')],
+                ['Peak amplitude, sweep down','unbounded (same curve)'],['Jump on sweep up','none (amplitude unbounded at \\(r=1\\))'],['Jump on sweep down','none (amplitude unbounded at \\(r=1\\))']);
+    }else if(unb){
+      rows.push(['Peak amplitude, sweep up',n3(pk(up))+'  at the edge of the plot; the upper branch follows the backbone without bound'],
+                ['Peak amplitude, sweep down',n3(pk(dn))],['Jump on sweep up','none: the upper branch has no turning point'],['Jump on sweep down',jtxt(jd)]);
+    }else{
+      rows.push(['Peak amplitude, sweep up',n3(pk(up))],['Peak amplitude, sweep down',n3(pk(dn))],['Jump on sweep up',jtxt(ju)],['Jump on sweep down',jtxt(jd)]);
+    }
+  }
+  // peak at r=1 with eps=0: G(X,1) X = f
+  const lin=[Math.PI*f/W0,Math.PI*f/W0,NaN,Math.sqrt(Math.PI*f/W0)][k];
+  rows.push(['Peak at \\(r=1\\) if \\(\\varepsilon=0\\) (\\(G(X,1)\\,X=f\\))',k===2?(stuck?'none (sticks)':'unbounded'):lin.toFixed(3)]);
+  ro(S('fr'),rows);
+}
+// ---------- free decay: x'' + x + Fd(x,v) = 0, x(0)=1, v(0)=0, RK4 ----------
+// state (x, v); viscous Fd = c v, Coulomb Fd = Fc sgn v, quadratic Fd = c2 |v| v,
+// calibrated to the loss W0 per cycle at X=1, Omega=1: c = W0/pi, Fc = W0/4, c2 = 3W0/8.
+const pt=new Plot(S('ct'),{pad:[48,12,12,36],xmin:0,xmax:40,ymin:-1.1,ymax:1.1});
+const pp=new Plot(S('cp'),{pad:[48,12,12,36],xmin:-1.15,xmax:1.15,ymin:-1.15,ymax:1.15,equal:true});
+const DK=[0,2,3],DCOL=[C.blue,C.plum,C.green],DNAME=['viscous','Coulomb','quadratic'],HSTEP=0.002;
+function decay(k,W0,T,h){
+  const c=W0/Math.PI,Fc=W0/4,c2=3*W0/8;
+  const ts=[0],xs=[1],vs=[0],turns=[[0,1]];let x=1,v=0,t=0,stop=NaN,s=-1; // s: sign of v in the current Coulomb half-cycle
+  const acc=(x,v)=>k===0?-x-c*v:k===3?-x-c2*Math.abs(v)*v:-x-Fc*s;
+  const step=(x,v,m)=>{const a1=acc(x,v),x2=x+m/2*v,v2=v+m/2*a1,a2=acc(x2,v2),x3=x+m/2*v2,v3=v+m/2*a2,a3=acc(x3,v3),x4=x+m*v3,v4=v+m*a3,a4=acc(x4,v4);
+    return [x+m/6*(v+2*v2+2*v3+v4),v+m/6*(a1+2*a2+2*a3+a4)];};
+  while(t<T-1e-12){
+    if(isFinite(stop)){t=Math.min(T,t+h);ts.push(t);xs.push(x);vs.push(0);continue;}
+    let [xn,vn]=step(x,v,h),tn=t+h;
+    if(k===2&&vn*s<0){ // velocity reverses inside the step: bisect for the turning point, then test for sticking
+      let lo=0,hi=h;for(let it=0;it<40;it++){const m=(lo+hi)/2;if(step(x,v,m)[1]*s>0)lo=m;else hi=m;}
+      const m=(lo+hi)/2;xn=step(x,v,m)[0];vn=0;tn=t+m;turns.push([tn,xn]);
+      if(Math.abs(xn)<=Fc)stop=tn;else s=-Math.sign(xn);
+    }
+    x=xn;v=vn;t=tn;ts.push(t);xs.push(x);vs.push(v);
+  }
+  return {ts,xs,vs,turns,stop,Fc};
+}
+let DC={W0:null};
+function decayData(W0){
+  if(DC.W0===W0)return DC;
+  const Fc=W0/4;let n=0;while(Math.abs(1-2*n*Fc)>Fc+1e-12)n++;
+  const T=Math.min(160,Math.max(6*Math.PI,1.2*n*Math.PI));
+  DC={W0,T,n,runs:DK.map(k=>decay(k,W0,T,HSTEP))};return DC;
+}
+const at=(o,t)=>{let lo=0,hi=o.ts.length-1;while(hi-lo>1){const m=(lo+hi)>>1;if(o.ts[m]<=t)lo=m;else hi=m;}return lo;};
+function drawDecay(){
+  const W0=val('W0'),D=decayData(W0),T=D.T,a=W0/(2*Math.PI),Fc=W0/4,tm=val('tm')*T,env=S('env').checked;
+  S('tm_o').textContent=tm.toFixed(2);
+  pt.set({xmax:T});pt.begin();pt.axes({zero:true,xlabel:'time t (ωn = 1)',ylabel:'x'});
+  if(env){pt.fill([0,T,T,0],[-Fc,-Fc,Fc,Fc],C.plum,0.13);
+    const te=[];for(let i=0;i<=300;i++)te.push(T*i/300);
+    const ec=te.filter(t=>t<=D.runs[1].stop+1e-9);
+    [[te,te.map(t=>Math.exp(-a*t)),C.blue],[ec,ec.map(t=>1-a*t),C.plum],[te,te.map(t=>1/(1+a*t)),C.green]].forEach(([q,y,col])=>{pt.line(q,y,col,1.3,[5,4]);pt.line(q,y.map(v=>-v),col,1.3,[5,4]);});}
+  D.runs.forEach((o,j)=>{const st=Math.max(1,Math.ceil(o.ts.length/3000)),X=[],Y=[];
+    for(let i=0;i<o.ts.length;i+=st){X.push(o.ts[i]);Y.push(o.xs[i]);}
+    pt.line(X,Y,DCOL[j],2);});
+  D.runs[1].turns.forEach(p=>pt.dot(p[0],p[1],C.plum,3));
+  if(isFinite(D.runs[1].stop))pt.ring(D.runs[1].stop,D.runs[1].xs[D.runs[1].xs.length-1],C.plum,6);
+  pt.line([tm,tm],[-1.1,1.1],C.axis,1.2,[3,3]);
+  D.runs.forEach((o,j)=>{const i=at(o,tm);pt.dot(o.ts[i],o.xs[i],DCOL[j],5.5,'#fff');});
+  // phase portrait
+  pp.begin();pp.axes({zero:true,xlabel:'x',ylabel:'dx/dt'});
+  [0,2,1].forEach(j=>{const o=D.runs[j],st=Math.max(1,Math.ceil(o.ts.length/4000)),X=[],V=[]; // Coulomb drawn last, on top
+    for(let i=0;i<o.ts.length;i+=st){X.push(o.xs[i]);V.push(o.vs[i]);}X.push(o.xs[o.xs.length-1]);V.push(o.vs[o.vs.length-1]);
+    pp.line(X,V,DCOL[j],j===1?2.2:1.1);});
+  pp.line([-Fc,Fc],[0,0],C.plum,5);pp.dot(Fc,0,C.plum,4.5,'#fff');pp.dot(-Fc,0,C.plum,4.5,'#fff');
+  D.runs.forEach((o,j)=>{const i=at(o,tm);pp.dot(o.xs[i],o.vs[i],DCOL[j],6,'#fff');});
+  // read-out
+  const cr=D.runs[1],tp=cr.turns.map(p=>Math.abs(p[1])),dec=[];for(let i=2;i<tp.length;i++)dec.push(tp[i-2]-tp[i]);
+  const dmin=dec.length?Math.min(...dec):NaN,dmax=dec.length?Math.max(...dec):NaN,xr=cr.xs[cr.xs.length-1];
+  const nh=cr.turns.length-1;
+  const vr=D.runs[0],pkv=[];for(let i=1;i<vr.xs.length-1&&pkv.length<2;i++)if(vr.xs[i]>vr.xs[i-1]&&vr.xs[i]>=vr.xs[i+1])pkv.push(vr.xs[i]);
+  const z=W0/(2*Math.PI),dth=2*Math.PI*z/Math.sqrt(1-z*z);
+  const qr=D.runs[2],pkq=[];for(let i=1;i<qr.xs.length-1;i++)if(qr.xs[i]>qr.xs[i-1]&&qr.xs[i]>=qr.xs[i+1])pkq.push([qr.ts[i],qr.xs[i]]);
+  const q5=pkq[Math.min(4,pkq.length-1)];
+  const rows=[['Calibration (same \\(\\Delta W=W_0\\) at \\(X=1\\))',TeX('c='+(W0/Math.PI).toFixed(4))+',  '+TeX('F_c='+Fc.toFixed(4))+',  '+TeX('c_2='+(3*W0/8).toFixed(4))+',  envelope slope '+TeX('a=W_0/2\\pi='+a.toFixed(4))],
+    ['Coulomb decrement per cycle (RK4)',isFinite(dmin)?dmin.toFixed(5)+(dmax-dmin>5e-5?' to '+dmax.toFixed(5):'')+'   (theory '+TeX('4F_c/k='+(4*Fc).toFixed(5))+')':'&mdash; (stopped within one cycle)'],
+    ['Coulomb stop (RK4)',isFinite(cr.stop)?TeX('t='+cr.stop.toFixed(4))+' = '+(cr.stop/Math.PI).toFixed(3)+'\\(\\,\\pi\\) after '+nh+' half-cycles, rest at '+TeX('x='+(Math.abs(xr)<5e-6?0:xr).toFixed(4))+' inside '+TeX('|x|\\le F_c/k='+Fc.toFixed(4)):'not within the window'],
+    ['Coulomb stop (theory)','first turning point with '+TeX('|1-2nF_c/k|\\le F_c/k')+': '+TeX('n='+D.n)+', '+TeX('t=n\\pi='+(D.n*Math.PI).toFixed(4))],
+    ['Viscous log decrement (RK4)',pkv.length>1?Math.log(pkv[0]/pkv[1]).toFixed(4)+'   (theory '+TeX('2\\pi\\zeta/\\sqrt{1-\\zeta^2}='+dth.toFixed(4))+', '+TeX('\\zeta=W_0/2\\pi')+')':'&mdash;'],
+    ['Quadratic drag, 5th peak (RK4)',q5?TeX('t='+q5[0].toFixed(2))+':  '+q5[1].toFixed(4)+'   (envelope '+TeX('1/(1+at)='+(1/(1+a*q5[0])).toFixed(4))+')':'&mdash;'],
+    ['At the marker \\(t='+tm.toFixed(2)+'\\)',D.runs.map((o,j)=>DNAME[j]+' '+TeX('x='+(Math.abs(o.xs[at(o,tm)])<5e-5?0:o.xs[at(o,tm)]).toFixed(3))).join(',  ')]];
+  ro(S('dr'),rows);
+}
+function draw(){drawLoops();drawFRF();drawDecay();}
+bind(['X','r','W0','f','eps'],draw);S('typ').addEventListener('change',draw);S('all').addEventListener('change',draw);
+bind(['tm'],drawDecay);S('env').addEventListener('change',drawDecay);
+const tctl=TUT.animate(dt=>{TUT.setVal('tm',(val('tm')+dt/12)%1);drawDecay();});tctl.paused=true;
+S('tplay').onclick=e=>{tctl.paused=!tctl.paused;e.target.textContent=tctl.paused?'Play':'Pause';};
+window.addEventListener('resize',draw);draw();
+})();
+</script>
+</body>
+</html>

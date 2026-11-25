@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tutorial 4: Phasors and Forced Response (version 1)</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <nav class="tn"><a href="index.html">All tutorials</a><a href="T03_s-plane_roots_L05-06.html">&larr; Tutorial 3</a><a href="T05_frf_family_L13-14.html">Next: Tutorial 5 &rarr;</a></nav>
+  <div class="kicker">MCE 464 &middot; Tutorial 4 &middot; Lectures 11&ndash;12 &middot; version 1</div>
+  <h1>Phasors and the Forced Response</h1>
+  <p class="lede">Magnitude and phase are one geometric fact: three force vectors that must close into a polygon. Sweep the frequency ratio and watch the polygon, the rotating phasors and the response curves move together.</p>
+</div></header>
+<div class="wrap">
+
+<h2>1. Forces as vectors</h2>
+<p>Drive \(m\ddot x + c\dot x + kx = F_0\cos\Omega t\). In steady state every term is a harmonic at \(\Omega\), so each one is a rotating vector (a phasor). With \(x=X\cos(\Omega t-\phi)\):</p>
+<ul>
+  <li><span class="sw" style="background:#0072BD"></span><b>Spring force</b> \(kX\), in phase with the displacement.</li>
+  <li><span class="sw" style="background:#D95319"></span><b>Damper force</b> \(c\Omega X\), \(90^\circ\) <em>ahead</em> of the displacement (velocity leads).</li>
+  <li><span class="sw" style="background:#67355C"></span><b>Inertia force</b> \(-m\Omega^2X\), \(180^\circ\) from the displacement.</li>
+</ul>
+<p>Newton's law says their sum is the applied force \(F_0\). Laid head to tail they close onto the red vector. Everything in Lectures 11&ndash;12 (the magnitude formula, the phase formula, resonance) can be read off this picture.</p>
+
+<div class="ctl">
+  <div><label>Frequency ratio \(r=\Omega/\omega_n\)<output id="r_o"></output>
+    <input type="range" id="r" min="0.02" max="3" step="0.005" value="0.6" data-dp="3"></label></div>
+  <div><label>Damping ratio \(\zeta\)<output id="z_o"></output>
+    <input type="range" id="z" min="0.02" max="1" step="0.005" value="0.15" data-dp="3"></label></div>
+  <div>
+    <button data-r="0.3">r = 0.3</button><button data-r="1">r = 1</button><button data-r="2">r = 2</button>
+    <button id="play">Pause motion</button>
+  </div>
+</div>
+
+<div class="figs">
+  <div class="fig"><div class="ttl">Force polygon (all forces divided by \(F_0\))</div>
+    <canvas id="cp" data-ar="0.82"></canvas>
+    <div class="cap">The three response forces add to \(F_0\) (red, length 1). The angle \(\phi\) between \(F_0\) and the spring vector is the phase lag.</div></div>
+  <div class="fig"><div class="ttl">Rotating phasors</div>
+    <canvas id="cw" data-ar="0.82"></canvas>
+    <div class="cap">Red: force, length 1. Blue: displacement, length \(D\). Both turn at \(\Omega\); the response trails the force by \(\phi\).</div></div>
+  <div class="fig"><div class="ttl">Vertical projections against time</div>
+    <canvas id="cr" data-ar="0.82"></canvas>
+    <div class="cap">Same vertical scale as the wheel. The response crest arrives \(\phi\) radians after the force crest.</div></div>
+</div>
+
+<div class="figs">
+  <div class="fig"><div class="ttl">Table of readings</div><table class="ro" id="ro"></table></div>
+  <div class="fig"><div class="ttl">Three regimes, read from the polygon</div>
+    <ol style="margin:4px 0 0 18px;padding:0">
+      <li><b>Low frequency, \(r\ll1\).</b> The spring vector is almost the whole force: \(D\approx1\), \(\phi\approx0\). The system is stiffness-controlled and follows the load quasi-statically.</li>
+      <li><b>Resonance, \(r=1\).</b> Spring and inertia vectors are equal and opposite and cancel. The damper alone balances \(F_0\): \(c\Omega X=F_0\), so \(D=1/(2\zeta)\) and \(\phi=90^\circ\).</li>
+      <li><b>High frequency, \(r\gg1\).</b> The inertia vector dominates and points opposite to \(x\): \(\phi\to180^\circ\), \(D\approx1/r^2\). The mass cannot follow.</li>
+    </ol></div>
+</div>
+
+<h2>2. Magnitude, phase and the mobility circle</h2>
+<p>Closing the polygon with Pythagoras and a tangent gives the lecture formulas:</p>
+<div class="eqb">$$ D(r)=\frac{kX}{F_0}=\frac{1}{\sqrt{(1-r^2)^2+(2\zeta r)^2}},\qquad \phi=\operatorname{atan2}\bigl(2\zeta r,\;1-r^2\bigr) $$</div>
+<p>The third panel below plots the mobility (velocity per unit force) in the complex plane. It traces an <em>exact circle</em> of diameter \(1/(2\zeta)\) through the origin. With \(Y=ir/(1-r^2+2i\zeta r)\),
+$$ \frac1Y = 2\zeta - i\,\frac{1-r^2}{r}, $$
+a vertical straight line \(\operatorname{Re}(1/Y)=2\zeta\), and inversion maps a line not through the origin to a circle through it. The half-power points sit where \(\operatorname{Re}Y=\pm\operatorname{Im}Y\) (\(45^\circ\) on the circle).</p>
+
+<div class="figs">
+  <div class="fig"><div class="ttl">Magnitude \(D(r)\)</div><canvas id="cm" data-ar="0.7"></canvas>
+    <div class="cap">Grey: \(\zeta=0.05,\,0.2,\,0.5,\,1\). Peak height is about \(1/(2\zeta)\), and the peak leans to \(r=\sqrt{1-2\zeta^2}\).</div></div>
+  <div class="fig"><div class="ttl">Phase lag \(\phi(r)\)</div><canvas id="cf" data-ar="0.7"></canvas>
+    <div class="cap">The phase always passes \(90^\circ\) at \(r=1\). Smaller damping makes the step sharper.</div></div>
+  <div class="fig"><div class="ttl">Mobility circle \(Y(r)\)</div><canvas id="cy" data-ar="0.82"></canvas>
+    <div class="cap">Green dots: half-power points, \(r_{a,b}=\mp\zeta+\sqrt{\zeta^2+1}\). Their separation is exactly \(r_b-r_a=2\zeta\).</div></div>
+</div>
+
+<div class="note"><b class="h">Bandwidth, geometrically</b>The half-power points are where the response phasor has turned \(45^\circ\) either side of the resonance diameter of the circle. When \(\zeta\) is small, very little change in \(r\) covers that arc, which is why a sharp peak identifies damping so well: \(\Delta r=2\zeta\).</div>
+
+<h2>3. Check yourself</h2>
+<details><summary>At \(r=1\) the spring force is large but it does not appear in the force balance. Why?</summary>
+<p>The inertia force equals it in magnitude and points the opposite way, so the two cancel. The mass and spring are exchanging energy with each other, and the external force only has to pay for the damper.</p></details>
+<details><summary>Why does \(\phi\) run from \(0\) to \(180^\circ\) and not further?</summary>
+<p>The damper vector is always \(90^\circ\) ahead of the displacement, and the work it takes from the load must be positive, which requires \(\sin\phi>0\) (\(2\zeta r>0\)). Hence \(0<\phi<180^\circ\).</p></details>
+<details><summary>If \(\zeta\) doubles, what happens to the peak and to the bandwidth?</summary>
+<p>The peak \(D\) halves (about \(1/(2\zeta)\)) and the half-power bandwidth doubles (\(\Delta r=2\zeta\)); their product stays fixed.</p></details>
+
+<footer>Slides: Lecture 11 (resonance, phase reversal), Lecture 12 (complex stiffness, magnitude, phase, half-power bandwidth). Source text: Inman, <i>Engineering Vibration</i>, Secs. 2.2&ndash;2.3. Labels inside the plots are plain text; the equations on the page are typeset with KaTeX.</footer>
+</div>
+
+<script src="assets/katex/katex.min.js"></script>
+<script src="assets/katex/auto-render.min.js"></script>
+<script src="assets/math.js"></script>
+<script src="assets/phonebar.js"></script>
+<script src="assets/layout.js"></script>
+<script src="assets/lib.js"></script>
+<script>
+(function(){
+const {ro,TeX,C,Plot,bind,val,setVal,animate,nice,TAU}=TUT;
+const S=id=>document.getElementById(id);
+const pp=new Plot(S('cp'),{pad:[40,12,12,34],equal:true,xmin:-1,xmax:1,ymin:-1,ymax:1});
+const pw=new Plot(S('cw'),{pad:[40,12,12,34],equal:true,xmin:-1,xmax:1,ymin:-1,ymax:1});
+const pr=new Plot(S('cr'),{pad:[40,12,12,34],xmin:-4*Math.PI,xmax:0,ymin:-1,ymax:1});
+const pm=new Plot(S('cm'),{pad:[48,12,12,36],xmin:0,xmax:3,ymin:0.05,ymax:60,ylog:true});
+const pf=new Plot(S('cf'),{pad:[48,12,12,36],xmin:0,xmax:3,ymin:0,ymax:180});
+const py=new Plot(S('cy'),{pad:[40,12,12,34],equal:true,xmin:-1,xmax:1,ymin:-1,ymax:1});
+let th=0;
+const Dfun=(r,z)=>1/Math.hypot(1-r*r,2*z*r);
+const Pfun=(r,z)=>Math.atan2(2*z*r,1-r*r);
+function mob(r,z){const q=Math.pow(1-r*r,2)+4*z*z*r*r;return [2*z*r*r/q, r*(1-r*r)/q];}
+
+function drawPolygon(r,z,D,phi){
+  const c=Math.cos(phi), s=Math.sin(phi);
+  const P=[[0,0],[D*c,-D*s]]; P.push([P[1][0]+2*z*r*D*s, P[1][1]+2*z*r*D*c]); P.push([P[2][0]-r*r*D*c, P[2][1]+r*r*D*s]);
+  const xs=P.map(p=>p[0]).concat([1]), ys=P.map(p=>p[1]).concat([0]);
+  const pad=0.18, x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  const w=Math.max(x1-x0,0.6),h=Math.max(y1-y0,0.6);
+  pp.set({xmin:x0-pad*w,xmax:x1+pad*w,ymin:y0-pad*h,ymax:y1+pad*h});
+  pp.begin(); pp.axes({zero:true,xlabel:'real (along F₀)',ylabel:'imaginary'});
+  pp.arrow(0,0,1,0,C.red,3.2,12); pp.text('F₀',0.5,0,C.red,{dy:-12,align:'center',bold:true});
+  pp.arrow(P[0][0],P[0][1],P[1][0],P[1][1],C.blue,2.6);
+  pp.arrow(P[1][0],P[1][1],P[2][0],P[2][1],C.orange,2.6);
+  pp.arrow(P[2][0],P[2][1],P[3][0],P[3][1],C.plum,2.6);
+  const mid=(a,b)=>[(a[0]+b[0])/2,(a[1]+b[1])/2];
+  let m=mid(P[0],P[1]); pp.text('kX',m[0],m[1],C.blue,{dx:-8,align:'right',bold:true});
+  m=mid(P[1],P[2]); pp.text('cΩX',m[0],m[1],C.orange,{dx:10,dy:6,bold:true});
+  m=mid(P[2],P[3]); pp.text('−mΩ²X',m[0],m[1],C.plum,{dx:10,bold:true});
+  // phase angle arc between real axis and spring vector (angle -phi)
+  const ra=Math.max(0.12*Math.max(w,h),0.1); pp.arc(0,0,ra,-phi,0,C.ink,1.8);
+  pp.text('φ',ra*1.5*Math.cos(-phi/2),ra*1.5*Math.sin(-phi/2),C.ink,{bold:true,align:'center'});
+}
+function drawWheel(r,z,D,phi){
+  const sc=Math.max(1,D)*1.18;
+  pw.set({xmin:-sc,xmax:sc,ymin:-sc,ymax:sc}); pw.begin(); pw.axes({zero:true,xlabel:'real',ylabel:'imaginary'});
+  pw.arc(0,0,1,0,TAU,'#e6c4c9',1.2,[4,3]); pw.arc(0,0,D,0,TAU,'#bcd6ea',1.2,[4,3]);
+  const fx=Math.cos(th),fy=Math.sin(th),xx=D*Math.cos(th-phi),xy=D*Math.sin(th-phi);
+  pw.line([xx,xx],[0,xy],C.blue,1,[3,3]); pw.line([fx,fx],[0,fy],C.red,1,[3,3]);
+  pw.arrow(0,0,xx,xy,C.blue,3,12); pw.arrow(0,0,fx,fy,C.red,3,12);
+  // phase lag arc, drawn at angle of force going back to response
+  pw.arc(0,0,0.45*Math.min(1,D)+0.0,th-phi,th,C.ink,1.8);
+  pw.text('F',fx*1.0,fy*1.0,C.red,{dx:8,dy:-8,bold:true});
+  pw.text('x',xx,xy,C.blue,{dx:8,dy:-8,bold:true});
+}
+function drawRoll(r,z,D,phi){
+  const sc=Math.max(1,D)*1.18;
+  pr.set({ymin:-sc,ymax:sc}); pr.begin(); pr.axes({zero:true,xlabel:'Ωt  (now at right edge)',ylabel:'Im part',xticks:[]});
+  const us=[],f=[],x=[]; for(let i=0;i<=400;i++){const off=-4*Math.PI*(1-i/400);us.push(off);f.push(Math.sin(th+off));x.push(D*Math.sin(th+off-phi));}
+  pr.line(us,f,C.red,2.2); pr.line(us,x,C.blue,2.6);
+  pr.dot(0,Math.sin(th),C.red,5); pr.dot(0,D*Math.sin(th-phi),C.blue,5);
+  pr.text('force',-4*Math.PI+0.2,sc*0.86,C.red,{bold:true}); pr.text('displacement',-4*Math.PI+2.4,sc*0.86,C.blue,{bold:true});
+}
+function drawStatic(r,z){
+  // magnitude
+  pm.begin(); pm.axes({xlabel:'r = Ω/ωn',ylabel:'D = kX/F₀'});
+  const rs=[];for(let i=0;i<=600;i++)rs.push(3*i/600);
+  [0.05,0.2,0.5,1].forEach(g=>pm.line(rs,rs.map(q=>Dfun(q,g)),'#c9c4b4',1.5));
+  pm.line([1,1],[0.05,60],C.axis,1,[4,4]);
+  pm.line(rs,rs.map(q=>Dfun(q,z)),C.blue,2.8); pm.dot(r,Dfun(r,z),C.red,6,'#fff');
+  // phase
+  pf.begin(); pf.axes({xlabel:'r = Ω/ωn',ylabel:'φ (degrees)',yticks:[0,45,90,135,180]});
+  [0.05,0.2,0.5,1].forEach(g=>pf.line(rs,rs.map(q=>Pfun(q,g)*180/Math.PI),'#c9c4b4',1.5));
+  pf.line([1,1],[0,180],C.axis,1,[4,4]); pf.line([0,3],[90,90],C.axis,1,[4,4]);
+  pf.line(rs,rs.map(q=>Pfun(q,z)*180/Math.PI),C.orange,2.8); pf.dot(r,Pfun(r,z)*180/Math.PI,C.red,6,'#fff');
+  // mobility circle
+  const d=1/(2*z);
+  py.set({xmin:-0.12*d,xmax:1.12*d,ymin:-0.6*d,ymax:0.6*d}); py.begin(); py.axes({zero:true,xlabel:'Re',ylabel:'Im'});
+  const rr=[];for(let i=1;i<=900;i++)rr.push(6*i/900*1);
+  const pts=rr.map(q=>mob(q,z)); py.line(pts.map(p=>p[0]),pts.map(p=>p[1]),C.blue,2.4);
+  py.arc(d/2,0,d/2,0,TAU,'#bcd6ea',1,[3,3]);
+  const ra=-z+Math.sqrt(z*z+1), rb=z+Math.sqrt(z*z+1);
+  [ra,rb].forEach(q=>{const p=mob(q,z);py.dot(p[0],p[1],C.green,5,'#fff');});
+  py.text('r = 1',d,0,C.ink,{dx:-6,dy:-12,align:'right',size:12});
+  const m=mob(r,z); py.arrow(0,0,m[0],m[1],C.red,1.6,8); py.dot(m[0],m[1],C.red,6,'#fff');
+}
+function readout(r,z,D,phi){
+  const ra=-z+Math.sqrt(z*z+1), rb=z+Math.sqrt(z*z+1);
+  const reg=r<0.85?'stiffness-controlled':r>1.18?'mass-controlled':'damping-controlled (near resonance)';
+  const rows=[['Frequency ratio \\(r\\)',r.toFixed(3)],['Magnitude \\(D=kX/F_0\\)',D.toFixed(3)],['Phase lag \\(\\phi\\)',(phi*180/Math.PI).toFixed(1)+'°'],
+   ['Spring / damper / inertia, \\(\\div F_0\\)',D.toFixed(2)+' / '+(2*z*r*D).toFixed(2)+' / '+(r*r*D).toFixed(2)],
+   ['Dominant balance',reg],['Peak \\(\\approx 1/(2\\zeta)\\)',(1/(2*z)).toFixed(2)],['Half-power \\(r\\)',ra.toFixed(3)+' and '+rb.toFixed(3)+'  ('+TeX('\\Delta r='+(rb-ra).toFixed(3))+')']];
+  ro(S('ro'),rows);
+}
+function draw(){
+  const r=val('r'),z=val('z'),D=Dfun(r,z),phi=Pfun(r,z);
+  drawPolygon(r,z,D,phi);drawWheel(r,z,D,phi);drawRoll(r,z,D,phi);drawStatic(r,z);readout(r,z,D,phi);
+}
+bind(['r','z'],draw);
+document.querySelectorAll('button[data-r]').forEach(b=>b.addEventListener('click',()=>{setVal('r',b.dataset.r);draw();}));
+const ctl=animate(dt=>{th=(th+2.2*dt)%(TAU*50);draw();});
+S('play').addEventListener('click',e=>{ctl.paused=!ctl.paused;e.target.textContent=ctl.paused?'Start motion':'Pause motion';});
+if(ctl.paused)S('play').textContent='Start motion';
+window.addEventListener('resize',draw);
+draw();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tutorial 10: Energy Surfaces and the Mass-Weighted Transform</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<link rel="stylesheet" href="assets/style.css">
+<style>/* phone width (sidebar stacked): a wide display equation scrolls inside its own box instead of widening the page; the padding keeps tall delimiters unclipped */@media (max-width:980px){.katex-display{overflow-x:auto;overflow-y:hidden;padding:.45em 0}}</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <nav class="tn"><a href="index.html">All tutorials</a><a href="T09_eigenproblem_modes_L20-21.html">&larr; Tutorial 9</a><a href="T11_modal_coordinates_L22.html">Next: Tutorial 11 &rarr;</a></nav>
+  <div class="kicker">MCE 464 &middot; Tutorial 10 &middot; Lectures 20&ndash;22</div>
+  <h1>Energy Surfaces and the Mass-Weighted Transform</h1>
+  <p class="lede">Kinetic and potential energy are two paraboloids over the same plane. In physical coordinates their axes disagree, which is what coupling means. It also covers systems with <em>inertial</em> coupling, where \(\vb{M}\) itself is not diagonal. Stretch the plane by \(\vb{M}^{1/2}\), then rotate it, and both surfaces align at once: those are the modal coordinates.</p>
+</div></header>
+<div class="wrap">
+
+<h2>1. Two bowls over one plane</h2>
+<p>In Lecture 20 the mass matrix comes from the kinetic energy written in generalized coordinates, \(T=\tfrac12\dot{\vb{q}}^{\T}\vb{M}\dot{\vb{q}}\), and \(\vb{K}\) from the potential energy, \(V=\tfrac12\vb{q}^{\T}\vb{K}\vb{q}\). Both are positive-definite quadratic forms. Each is a <b>paraboloid</b> whose level curves are ellipses. The potential bowl (left, below) sits over the displacement plane; the kinetic bowl (right) sits over the velocity plane. A free vibration is a ball rolling on the \(V\) surface while a partner ball rides the \(T\) surface; the heights trade places while \(T+V\) stays fixed.</p>
+<p>Pick a system below. For the two-mass chain \(\vb{M}\) is diagonal, so the kinetic bowl is already aligned with the axes and only its widths differ. For the double pendulum and the cart with a pendulum, the generalized coordinates share kinetic energy through a cross term \(M_{12}\neq 0\). Then the kinetic bowl is <b>tilted</b> in the \(\vb{q}\) plane, just like the potential bowl can be.</p>
+
+<div id="sysnote" class="note">
+  <div data-sys="a"><b class="h">Two-mass chain</b>Coordinates \(q_1,q_2\) (displacements). \(T=\tfrac12(m_1\dot q_1^2+m_2\dot q_2^2)\), so \(\vb{M}=\mathrm{diag}(m_1,m_2)\). \(V=\tfrac12[k_1q_1^2+k_2(q_2-q_1)^2+k_3q_2^2]\), so \(\vb{K}=\begin{bmatrix}k_1+k_2&-k_2\\-k_2&k_2+k_3\end{bmatrix}\). Coupling is in \(\vb{K}\) only.</div>
+  <div data-sys="b" style="display:none"><b class="h">Double pendulum, small angles</b>Coordinates \(\theta_1,\theta_2\). With \(\vb{r}_1=l_1(\sin\theta_1,-\cos\theta_1)\) and \(\vb{r}_2=\vb{r}_1+l_2(\sin\theta_2,-\cos\theta_2)\):
+  $$T=\tfrac12(m_1+m_2)l_1^2\dot\theta_1^2+m_2l_1l_2\cos(\theta_1-\theta_2)\,\dot\theta_1\dot\theta_2+\tfrac12m_2l_2^2\dot\theta_2^2,\qquad V=-(m_1+m_2)g\,l_1\cos\theta_1-m_2g\,l_2\cos\theta_2 .$$
+  Set \(\cos\to1\) in \(T\) and \(\cos\theta\to1-\theta^2/2\) in \(V\):
+  $$\vb{M}=\begin{bmatrix}(m_1+m_2)l_1^2&m_2l_1l_2\\m_2l_1l_2&m_2l_2^2\end{bmatrix},\qquad \vb{K}=\begin{bmatrix}(m_1+m_2)g\,l_1&0\\0&m_2g\,l_2\end{bmatrix}.$$
+  Coupling is in \(\vb{M}\) only. The potential bowl is already aligned with the axes; the kinetic bowl is not.</div>
+  <div data-sys="c" style="display:none"><b class="h">Cart carrying a pendulum, small angle</b>Coordinates \(\vb{q}=(x,\ \theta)\): cart displacement \(x\) (a length) and pendulum angle \(\theta\). The cart (\(m_1\)) is held by a spring \(k\); the bob (\(m_2\)) hangs on a rod of length \(l\). The bob velocity is \((\dot x+l\dot\theta\cos\theta,\ l\dot\theta\sin\theta)\), so
+  $$T=\tfrac12(m_1+m_2)\dot x^2+m_2l\cos\theta\,\dot x\dot\theta+\tfrac12m_2l^2\dot\theta^2,\qquad V=\tfrac12kx^2-m_2g\,l\cos\theta,$$
+  $$\vb{M}=\begin{bmatrix}m_1+m_2&m_2l\\m_2l&m_2l^2\end{bmatrix},\qquad \vb{K}=\begin{bmatrix}k&0\\0&m_2g\,l\end{bmatrix}.$$
+  The two coordinates have different units, which is fine: the quadratic forms \(T\) and \(V\) are what matter. Coupling is in \(\vb{M}\) only.</div>
+</div>
+
+<h2>2. Making both bowls round and aligned</h2>
+<p>Two linear changes of axes do the job. First the <b>mass-weighted</b> coordinates
+$$ \tilde{\vb{q}}=\vb{M}^{1/2}\vb{q}\quad\Longrightarrow\quad T=\tfrac12\dot{\tilde{\vb{q}}}^{\T}\dot{\tilde{\vb{q}}},\qquad V=\tfrac12\,\tilde{\vb{q}}^{\T}\tilde{\vb{K}}\,\tilde{\vb{q}},\qquad \tilde{\vb{K}}=\vb{M}^{-1/2}\vb{K}\vb{M}^{-1/2}. $$
+Here \(\vb{M}^{1/2}\) is the symmetric square root. Write \(\vb{M}=\vb{V}\,\mathrm{diag}(\mu_i)\,\vb{V}^{\T}\) with orthonormal \(\vb{V}\); then \(\vb{M}^{\tau/2}=\vb{V}\,\mathrm{diag}(\mu_i^{\tau/2})\,\vb{V}^{\T}\). Stage 1 of the page morphs the plane by \(\vb{M}^{\tau/2}\) for \(\tau\) from 0 to 1. This is a stretch by \(\mu_i^{\tau/2}\) along the <em>principal axes of \(\vb{M}\)</em>. When \(\vb{M}\) is diagonal those axes are the coordinate axes and the stage is plain axis scaling. When \(\vb{M}\) has a cross term, the principal axes are tilted, so the stage stretches along tilted directions and reshapes the tilted kinetic ellipse into a circle. The kinetic bowl still becomes round at \(\tau=1\).</p>
+<p>The kinetic bowl is now a circular paraboloid (any rotation leaves it unchanged), and \(\tilde{\vb{K}}\) is symmetric, so the equations \(\ddot{\tilde{\vb{q}}}+\tilde{\vb{K}}\tilde{\vb{q}}=\vb{0}\) pose a <em>standard</em> eigenproblem with orthonormal eigenvectors \(\vb{\psi}_r\). Second, rotate onto them:
+$$ \vb{\eta}=\vb{\Psi}^{\T}\tilde{\vb{q}}\quad\Longrightarrow\quad T=\tfrac12\sum_r\dot {\eta}_r^2,\qquad V=\tfrac12\sum_r\omega_r^2{\eta}_r^2 . $$
+Both bowls are now axis-aligned, and \({\eta}_r\) are the modal coordinates of Tutorial 11, because \(\vb{\phi}_r=\vb{M}^{-1/2}\vb{\psi}_r\) and
+$$ \vb{\eta}=\vb{\Psi}^{\T}\vb{M}^{1/2}\vb{q}=\vb{\Phi}^{\T}\vb{M}\,\vb{q}. $$
+In two dimensions the second step is a pure rotation by the angle \(-\alpha\) of the first eigenvector \(\vb{\psi}_1\). (The sign of \(\vb{\psi}_2\) is chosen as \(\vb{\psi}_1\) turned by \(+90^\circ\), so the step is a proper rotation; this fixes the sign of \(\vb{\phi}_2\) and \({\eta}_2\) and nothing else.) The page checks the identity \(\vb{\Psi}^{\T}\vb{M}^{1/2}=\vb{\Phi}^{\T}\vb{M}\) numerically in the table below.</p>
+
+<div class="ctl" data-title="System">
+  <div><select class="gal" id="sys"><option value="a">Two-mass chain</option><option value="b">Double pendulum</option><option value="c">Cart with pendulum</option></select></div>
+  <div data-sys="a"><label>\(m_1\)<output id="m1_o"></output><input type="range" id="m1" min="0.5" max="3" step="0.05" value="1"></label></div>
+  <div data-sys="a"><label>\(m_2\)<output id="m2_o"></output><input type="range" id="m2" min="0.5" max="3" step="0.05" value="2.2"></label></div>
+  <div data-sys="a"><label>\(k_1\)<output id="k1_o"></output><input type="range" id="k1" min="0.2" max="3" step="0.05" value="1"></label></div>
+  <div data-sys="a"><label>\(k_2\) (coupling)<output id="k2_o"></output><input type="range" id="k2" min="0" max="3" step="0.05" value="0.9"></label></div>
+  <div data-sys="a"><label>\(k_3\)<output id="k3_o"></output><input type="range" id="k3" min="0.2" max="3" step="0.05" value="1.6"></label></div>
+  <div data-sys="b" style="display:none"><label>\(m_1\)<output id="pm1_o"></output><input type="range" id="pm1" min="0.2" max="3" step="0.05" value="1"></label></div>
+  <div data-sys="b" style="display:none"><label>\(m_2\)<output id="pm2_o"></output><input type="range" id="pm2" min="0.2" max="3" step="0.05" value="1"></label></div>
+  <div data-sys="b" style="display:none"><label>\(l_1\)<output id="pl1_o"></output><input type="range" id="pl1" min="0.5" max="2" step="0.05" value="1"></label></div>
+  <div data-sys="b" style="display:none"><label>\(l_2\)<output id="pl2_o"></output><input type="range" id="pl2" min="0.5" max="2" step="0.05" value="1"></label></div>
+  <div data-sys="b" style="display:none"><label>\(g\)<output id="pg_o"></output><input type="range" id="pg" min="1" max="20" step="0.01" value="9.81"></label></div>
+  <div data-sys="c" style="display:none"><label>\(m_1\) (cart)<output id="cm1_o"></output><input type="range" id="cm1" min="0.2" max="3" step="0.05" value="1"></label></div>
+  <div data-sys="c" style="display:none"><label>\(m_2\) (bob)<output id="cm2_o"></output><input type="range" id="cm2" min="0.2" max="3" step="0.05" value="0.5"></label></div>
+  <div data-sys="c" style="display:none"><label>\(l\)<output id="cl_o"></output><input type="range" id="cl" min="0.3" max="2" step="0.05" value="0.8"></label></div>
+  <div data-sys="c" style="display:none"><label>\(k\)<output id="ck_o"></output><input type="range" id="ck" min="0.5" max="10" step="0.1" value="3" data-dp="1"></label></div>
+  <div data-sys="c" style="display:none"><label>\(g\)<output id="cg_o"></output><input type="range" id="cg" min="1" max="20" step="0.01" value="9.81"></label></div>
+</div>
+<div class="ctl" data-title="Transform">
+  <div><label>Transform stage \(\tau\)<output id="tau_o"></output><input type="range" id="tau" min="0" max="2" step="0.005" value="0" data-dp="3"></label>
+    <span class="u" style="font-size:13px">0: physical \(\vb{q}\) &nbsp; 1: \(\tilde{\vb{q}}=\vb{M}^{1/2}\vb{q}\) &nbsp; 2: modal \(\vb{\eta}\)</span></div>
+  <div><button id="s0">\(\vb{q}\)</button><button id="s1">\(\tilde{\vb{q}}\)</button><button id="s2">\(\vb{\eta}\)</button></div>
+  <div><label class="chk"><input type="checkbox" id="auto" checked> animate the transform</label></div>
+</div>
+<div class="ctl" data-title="Motion">
+  <div><label>Initial mix of modes \(\alpha_0\)<output id="a0_o"></output>&deg;<input type="range" id="a0" min="0" max="90" step="1" value="35" data-dp="0"></label></div>
+  <div><label class="chk"><input type="checkbox" id="rot" checked> rotate the camera</label></div>
+  <div><button id="play">Pause motion</button></div>
+</div>
+
+<div class="figs">
+  <div class="fig"><div class="ttl">Potential surface \(V\) over the displacement plane</div><canvas id="cv" data-ar="0.85"></canvas>
+    <div class="cap">Wire mesh: the same bowl seen through a changing set of axes (at stage 0 it is tilted in \(\vb{q}\) for the pendulum systems, because \(\vb{M}\) is not diagonal). Blue and orange curves: the two mode lines lifted onto the bowl. Plum rings: constant-\(V\) contours. Red ball: the system. Drag to rotate.</div></div>
+  <div class="fig"><div class="ttl">Kinetic surface \(T\) over the velocity plane</div><canvas id="ct" data-ar="0.85"></canvas>
+    <div class="cap">The same transformation applied to the velocities. At stage 0 its axes are tilted whenever \(M_{12}\neq0\). At stage 1 the mesh is exactly a surface of revolution, because \(T=\tfrac12|\dot{\tilde{\vb{q}}}|^2\).</div></div>
+  <div class="fig"><div class="ttl">Top view of the displacement plane</div><canvas id="cp" data-ar="0.9"></canvas>
+    <div class="cap">Faint grid: the physical plane being deformed. Ink: \(\vb{q}^{\T}\vb{M}\vb{q}=1\). Plum: \(\vb{q}^{\T}\vb{K}\vb{q}=1\). Dotted: the unit circle. Blue, orange: mode lines. Red: path of the system.</div></div>
+  <div class="fig"><div class="ttl">Energy exchange</div><canvas id="ce" data-ar="0.9"></canvas>
+    <div class="cap"><span class="sw" style="background:#D95319"></span>\(T\) &nbsp; <span class="sw" style="background:#0072BD"></span>\(V\) &nbsp; <span class="sw" style="background:#1b2a3a"></span>\(T+V\). Energy is a coordinate-free number: it does not change as you morph the axes.</div></div>
+</div>
+<div class="figs"><div class="fig"><div class="ttl">Matrices at this stage</div><table class="ro" id="ro"></table></div>
+  <div class="fig"><div class="ttl">What to watch</div>
+    <ol style="margin:4px 0 0 18px;padding:0">
+      <li><b>0 &rarr; 1.</b> The ink ellipse \(\vb{q}^{\T}\vb{M}\vb{q}=1\) becomes the dotted unit circle and the kinetic mesh becomes round. For the pendulum systems that ellipse starts tilted, so the stretch runs along the tilted principal axes of \(\vb{M}\), not along \(q_1\) and \(q_2\). The potential bowl is still tilted: \(\tilde{\vb{K}}\) is not diagonal.</li>
+      <li><b>1 &rarr; 2.</b> A pure rotation. Nothing is stretched, so the kinetic bowl stays round, while the potential bowl turns until its axes are the coordinate axes. The mode lines become the \({\eta}_1\) and \({\eta}_2\) axes.</li>
+      <li>For a single mode (set \(\alpha_0\) to 0 or 90&deg;) the ball runs along a principal parabola of the bowl: a one-DOF oscillator hidden inside the plane.</li>
+      <li>Chain, \(k_2=0\): the masses decouple. The rotation angle \(\alpha\) is then 0 or 90&deg;, and only the scaling stage matters.</li>
+      <li>Chain, \(m_1=m_2\): the scaling stage is a uniform zoom, so the shape of the potential bowl is unchanged by it. For the pendulum systems \(\vb{M}\) is never a multiple of \(\vb{I}\) here, so stage 1 always reshapes the plane.</li>
+      <li>Double pendulum: \(\vb{K}\) is diagonal, so the potential bowl starts aligned. The coupling lives entirely in the tilted kinetic bowl, and stage 1 turns it into a tilted potential bowl.</li>
+    </ol></div></div>
+
+<h2>3. Projecting an initial condition onto the modes</h2>
+<p>For mass-normalized modes, initial conditions in physical coordinates go to modal coordinates through \(\vb{\Phi}^{\T}\vb{M}\), not through \(\vb{\Phi}^{\T}\) alone:
+$$ \vb{\eta}(0)=\vb{\Phi}^{\T}\vb{M}\,\vb{q}(0),\qquad \dot{\vb{\eta}}(0)=\vb{\Phi}^{\T}\vb{M}\,\dot{\vb{q}}(0). $$
+The table treats the ball's present state as an initial condition and applies this live. Each \({\eta}_r\) then evolves as its own oscillator, \(\ddot {\eta}_r+\omega_r^2{\eta}_r=0\), and the energies computed from \(\vb{\eta}\) match those computed from \(\vb{q}\).</p>
+<div class="figs"><div class="fig"><div class="ttl">Ball state projected onto the modes</div><table class="ro" id="ro2"></table>
+  <div class="cap">The current state is read off the red ball in the plots above. With \(\alpha_0\) set to 0 or 90&deg; one of \({\eta}_1,{\eta}_2\) is zero at all times.</div></div></div>
+
+<h2>4. Check yourself</h2>
+<details><summary>Why is the second step a rotation and not another stretch?</summary>
+<p>After the first step the kinetic metric is the identity. Only transformations that preserve \(\dot{\tilde{\vb{q}}}^{\T}\dot{\tilde{\vb{q}}}\) keep it that way: rotations and reflections. The potential matrix \(\tilde{\vb{K}}\) is symmetric, so by the spectral theorem such an orthogonal change of axes diagonalizes it.</p></details>
+<details><summary>Why are mass-normalized modes \(\vb{\phi}_r=\vb{M}^{-1/2}\vb{\psi}_r\) generally <em>not</em> perpendicular in the physical plane?</summary>
+<p>The map \(\vb{M}^{-1/2}\) stretches the plane by different amounts along different axes, so perpendicular \(\vb{\psi}_r\) are sent to non-perpendicular \(\vb{\phi}_r\). They are perpendicular in the \(\vb{M}\)-weighted inner product, \(\vb{\phi}_i^{\T}\vb{M}\vb{\phi}_j=\delta_{ij}\), which is the ordinary dot product in \(\tilde{\vb{q}}\). They are also \(\vb{K}\)-orthogonal, \(\vb{\phi}_i^{\T}\vb{K}\vb{\phi}_j=\omega_i^2\delta_{ij}\).</p></details>
+<details><summary>Why does the double pendulum have a tilted kinetic ellipse but a diagonal \(\vb{K}\)?</summary>
+<p>Both bobs move when \(\theta_1\) changes, so the velocity of bob 2 contains \(l_1\dot\theta_1\) and \(l_2\dot\theta_2\) together, and squaring it produces the cross term \(m_2l_1l_2\dot\theta_1\dot\theta_2\). The gravitational potential, in contrast, is a sum of one term per angle. Which matrix carries the coupling depends on the coordinates, not only on the physics: choose absolute angles and the coupling sits in \(\vb{M}\); choose the relative angle \(\theta_2-\theta_1\) and it moves into \(\vb{K}\) as well.</p></details>
+<details><summary>How does a Cholesky factor \(\vb{M}=\vb{L}\vb{L}^{\T}\) compare with \(\vb{M}^{1/2}\)?</summary>
+<p>Any \(\vb{S}\) with \(\vb{S}^{\T}\vb{S}=\vb{M}\) makes the kinetic bowl round. They differ by a rotation, so the eigenvectors of the transformed stiffness are rotated accordingly; the frequencies and the \(\vb{\eta}\) coordinates (up to sign) are identical. \(\vb{M}^{1/2}\) is the symmetric choice. It is unique and involves no tilt of its own, but for a non-diagonal \(\vb{M}\) it needs the eigendecomposition of \(\vb{M}\), which a Cholesky factor does not.</p></details>
+
+<footer>Slides: Lecture 20 (kinetic and potential energy in generalized coordinates, \(\vb{M}\) and \(\vb{K}\)), Lecture 21 (eigenvector scale, distinct modes, stiffness orthogonality, mass normalization, modal matrices), Lecture 22 (modal transformation, uncoupled model, modal truncation). Stage 1 is \(\vb{M}^{\tau/2}\) for \(\tau\) from 0 to 1; stage 2 is a rotation by \(-\alpha\,(\tau-1)\) applied after \(\vb{M}^{1/2}\). The pendulum models use small-angle \(\vb{M}\) and \(\vb{K}\); the plotted ranges are kept small for that reason. Labels in the plots are plain text; equations are typeset with KaTeX.</footer>
+</div>
+
+<script src="assets/katex/katex.min.js"></script>
+<script src="assets/katex/auto-render.min.js"></script>
+<script src="assets/math.js"></script>
+<script src="assets/phonebar.js"></script>
+<script src="assets/layout.js"></script>
+<script src="assets/lib.js"></script>
+<script src="assets/lib3d.js"></script>
+<script>
+(function(){
+const {C,Plot,bind,val,setVal,animate,f3,TAU,ro}=TUT;
+const {View3D,cam,lerpCol}=TUT3;
+const S=id=>document.getElementById(id);
+const vV=new View3D(S('cv'),{cyf:0.66}),vT=new View3D(S('ct'),{cyf:0.66});
+const pTop=new Plot(S('cp'),{pad:[40,12,12,34],equal:true,xmin:-1,xmax:1,ymin:-1,ymax:1});
+const pE=new Plot(S('ce'),{pad:[48,12,12,36],xmin:0,xmax:12,ymin:0,ymax:1});
+const NG=14;let L=1.2;
+let tt=0,ts=0,hist=[],trailX=[],trailV=[],cache={key:''},autoU=0;
+/* ---- general symmetric 2x2 algebra (inline; TUT.eig2 handles diagonal M only) ---- */
+/* general 2x2 symmetric algebra; M, K are [[a,b],[b,d]] */
+const mm=(A,B)=>[[A[0][0]*B[0][0]+A[0][1]*B[1][0],A[0][0]*B[0][1]+A[0][1]*B[1][1]],[A[1][0]*B[0][0]+A[1][1]*B[1][0],A[1][0]*B[0][1]+A[1][1]*B[1][1]]];
+const mT=A=>[[A[0][0],A[1][0]],[A[0][1],A[1][1]]];
+const mv=(A,x)=>[A[0][0]*x[0]+A[0][1]*x[1],A[1][0]*x[0]+A[1][1]*x[1]];
+// eigen-decomposition of a symmetric 2x2: lam ascending, v[r] unit eigenvector, v[0] has first component >= 0, v[1]=v[0] rotated by +90 deg
+function sym2(A){const a=A[0][0],b=0.5*(A[0][1]+A[1][0]),d=A[1][1],tr=(a+d)/2,df=(a-d)/2,r=Math.hypot(df,b),th=0.5*Math.atan2(b,df);
+  let v1=[-Math.sin(th),Math.cos(th)];if(v1[0]<-1e-12||(Math.abs(v1[0])<=1e-12&&v1[1]<0))v1=[-v1[0],-v1[1]];
+  return {lam:[tr-r,tr+r],v:[v1,[-v1[1],v1[0]]]};}
+// A^p = V diag(lam^p) V^T from sym2 output
+function mpow(e,p){const m=[[0,0],[0,0]];for(let r=0;r<2;r++){const f=Math.pow(e.lam[r],p);for(let i=0;i<2;i++)for(let j=0;j<2;j++)m[i][j]+=f*e.v[r][i]*e.v[r][j];}return m;}
+const SYS={
+ a:{L:1.2,ids:['m1','m2','k1','k2','k3'],build:p=>({M:[[p[0],0],[0,p[1]]],K:[[p[2]+p[3],-p[3]],[-p[3],p[3]+p[4]]]})},
+ b:{L:0.35,ids:['pm1','pm2','pl1','pl2','pg'],build:p=>({M:[[(p[0]+p[1])*p[2]*p[2],p[1]*p[2]*p[3]],[p[1]*p[2]*p[3],p[1]*p[3]*p[3]]],K:[[(p[0]+p[1])*p[4]*p[2],0],[0,p[1]*p[4]*p[3]]]})},
+ c:{L:0.35,ids:['cm1','cm2','cl','ck','cg'],build:p=>({M:[[p[0]+p[1],p[1]*p[2]],[p[1]*p[2],p[1]*p[2]*p[2]]],K:[[p[3],0],[0,p[1]*p[4]*p[2]]]})}};
+function build(sid,p){const D=SYS[sid],{M,K}=D.build(p),E={M,K,sid,L:D.L};
+  E.eM=sym2(M);E.Mh=mpow(E.eM,0.5);E.Mih=mpow(E.eM,-0.5);
+  const Kt=mm(mm(E.Mih,K),E.Mih);Kt[0][1]=Kt[1][0]=0.5*(Kt[0][1]+Kt[1][0]);E.Kt=Kt;
+  const eK=sym2(Kt);E.lam=eK.lam;E.psi=eK.v;E.phi=E.psi.map(ps=>mv(E.Mih,ps));E.alpha=Math.atan2(E.psi[0][1],E.psi[0][0]);
+  return E;}
+function Bmat(E,tau){if(tau<=1)return mpow(E.eM,tau/2);const a=-E.alpha*(tau-1),c=Math.cos(a),n=Math.sin(a);return mm([[c,-n],[n,c]],E.Mh);}
+function sys(){const s=S('sys').value,E=build(s,SYS[s].ids.map(val));L=E.L;
+  E.amp=0.6*L/Math.max.apply(null,E.phi.reduce((a,p)=>a.concat(p.map(Math.abs)),[]));return E;}
+const mul=(B,x)=>[B[0][0]*x[0]+B[0][1]*x[1],B[1][0]*x[0]+B[1][1]*x[1]];
+const Vf=(E,x)=>0.5*(E.K[0][0]*x[0]*x[0]+2*E.K[0][1]*x[0]*x[1]+E.K[1][1]*x[1]*x[1]);
+const Tf=(E,x)=>0.5*(E.M[0][0]*x[0]*x[0]+2*E.M[0][1]*x[0]*x[1]+E.M[1][1]*x[1]*x[1]);
+function prep(E){
+  const s=S('sys').value,key=s+','+SYS[s].ids.map(val).join(',');if(cache.key===key)return;
+  let bound=0,zV=0,zT=0;
+  [0,1,2].forEach(tau=>{const B=Bmat(E,tau);for(const a of [-L,L])for(const b of [-L,L]){const u=mul(B,[a,b]);bound=Math.max(bound,Math.hypot(u[0],u[1]));}});
+  for(let i=0;i<=NG;i++)for(let j=0;j<=NG;j++){const x=[-L+2*L*i/NG,-L+2*L*j/NG];zV=Math.max(zV,Vf(E,x));zT=Math.max(zT,Tf(E,x));}
+  cache={key,bound:bound*1.02,zV,zT};trailX=[];trailV=[];hist=[];
+}
+function surface(view,E,tau,f,zmax){
+  const B=Bmat(E,tau),pts=[];
+  for(let i=0;i<=NG;i++){const row=[];for(let j=0;j<=NG;j++){const x=[-L+2*L*i/NG,-L+2*L*j/NG],u=mul(B,x),z=f(E,x)/zmax;row.push([u[0]/cache.bound,u[1]/cache.bound,0.95*z,z]);}pts.push(row);}
+  for(let i=0;i<=NG;i++)for(let j=0;j<=NG;j++){
+    if(j<NG)view.seg(pts[i][j],pts[i][j+1],lerpCol((pts[i][j][3]+pts[i][j+1][3])/2),1);
+    if(i<NG)view.seg(pts[i][j],pts[i+1][j],lerpCol((pts[i][j][3]+pts[i+1][j][3])/2),1);}
+  // floor outline
+  const o=[];for(let j=0;j<=NG;j++)o.push([pts[0][j][0],pts[0][j][1],0]);for(let i=0;i<=NG;i++)o.push([pts[i][NG][0],pts[i][NG][1],0]);for(let j=NG;j>=0;j--)o.push([pts[NG][j][0],pts[NG][j][1],0]);for(let i=NG;i>=0;i--)o.push([pts[i][0][0],pts[i][0][1],0]);
+  view.poly(o,'#c9c4b4',1.4);
+  return B;
+}
+function contour(view,E,B,Q,levelFrac,zmax,col,lw){ // ellipse Q(x)=2*levelFrac*zmax (energy = levelFrac*zmax)
+  const pts=[],floor=[];for(let i=0;i<=120;i++){const s=TAU*i/120,u=[Math.cos(s),Math.sin(s)],qf=Q(u),r=Math.sqrt(levelFrac*zmax/qf),x=[r*u[0],r*u[1]];
+    if(Math.abs(x[0])>L||Math.abs(x[1])>L){if(pts.length>1)view.poly(pts,col,lw);pts.length=0;continue;}
+    const b=mul(B,x);pts.push([b[0]/cache.bound,b[1]/cache.bound,0.95*levelFrac]);floor.push(b);}
+  if(pts.length>1)view.poly(pts,col,lw);}
+function modeCurves(view,E,B){
+  [0,1].forEach(r=>{const ph=E.phi[r],mx=Math.max(Math.abs(ph[0]),Math.abs(ph[1]),1e-9),sm=L/mx,pts=[],fl=[];
+    for(let i=-40;i<=40;i++){const s=sm*i/40,x=[s*ph[0],s*ph[1]],b=mul(B,x);pts.push([b[0]/cache.bound,b[1]/cache.bound,0.95*Vf(E,x)/cache.zV]);fl.push([b[0]/cache.bound,b[1]/cache.bound,0]);}
+    view.poly(fl,r?C.orange:C.blue,1.2,[4,3]);view.poly(pts,r?C.orange:C.blue,2.8);});}
+function motion(E,a0){
+  const w=E.lam.map(Math.sqrt),ca=Math.cos(a0),sa=Math.sin(a0),A=E.amp,x=[0,0],v=[0,0];
+  for(let i=0;i<2;i++){x[i]=A*(ca*E.phi[0][i]*Math.cos(w[0]*tt)+sa*E.phi[1][i]*Math.cos(w[1]*tt));v[i]=-A*(ca*E.phi[0][i]*w[0]*Math.sin(w[0]*tt)+sa*E.phi[1][i]*w[1]*Math.sin(w[1]*tt));}
+  return {x,v};}
+function ballOn(view,E,B,p,f,zmax,trail,col){
+  const b=mul(B,p),z=0.95*f(E,p)/zmax;view.poly([[b[0]/cache.bound,b[1]/cache.bound,0],[b[0]/cache.bound,b[1]/cache.bound,z]],'#e6b9c0',1.2,[2,2]);
+  view.poly(trail.map(q=>{const bb=mul(B,q);return [bb[0]/cache.bound,bb[1]/cache.bound,0];}),'#e6a3ad',1.6);
+  view.dot([b[0]/cache.bound,b[1]/cache.bound,z],col,7,'#fff');}
+function draw(){
+  const E=sys();prep(E);const tau=val('tau'),a0=val('a0')*Math.PI/180,B=Bmat(E,tau),{x,v}=motion(E,a0);
+  // potential
+  vV.begin();surface(vV,E,tau,(E_,xx)=>Vf(E_,xx),cache.zV);
+  [0.2,0.45,0.7].forEach(lv=>contour(vV,E,B,u=>0.5*(E.K[0][0]*u[0]*u[0]+2*E.K[0][1]*u[0]*u[1]+E.K[1][1]*u[1]*u[1])*1,lv,cache.zV,C.plum,1.6));
+  modeCurves(vV,E,B);ballOn(vV,E,B,x,Vf,cache.zV,trailX,C.red);
+  vV.text('V',[0,0,1.12],C.ink,{bold:true,align:'center',size:14});
+  // kinetic
+  vT.begin();surface(vT,E,tau,(E_,xx)=>Tf(E_,xx),cache.zT);
+  [0.2,0.45,0.7].forEach(lv=>contour(vT,E,B,u=>0.5*(E.M[0][0]*u[0]*u[0]+2*E.M[0][1]*u[0]*u[1]+E.M[1][1]*u[1]*u[1]),lv,cache.zT,C.ink,1.4));
+  ballOn(vT,E,B,v,Tf,cache.zT,trailV,C.red);vT.text('T',[0,0,1.12],C.ink,{bold:true,align:'center',size:14});
+  // top view
+  const bd=cache.bound;pTop.set({xmin:-bd,xmax:bd,ymin:-bd,ymax:bd});pTop.begin();pTop.axes({zero:true,xlabel:'u₁',ylabel:'u₂'});
+  for(let k=-3;k<=3;k++){const a=[],b=[],c=[],d=[];for(let i=-6;i<=6;i++){const s=L*i/6,p1=mul(B,[s,L*k/3]),p2=mul(B,[L*k/3,s]);a.push(p1[0]);b.push(p1[1]);c.push(p2[0]);d.push(p2[1]);}pTop.line(a,b,'#e0dccf',1);pTop.line(c,d,'#e0dccf',1);}
+  pTop.arc(0,0,1,0,TAU,C.axis,1.3,[3,3]);
+  const ellp=(Q,lv,col,lw,dash)=>{const xs=[],ys=[];for(let i=0;i<=200;i++){const s=TAU*i/200,u=[Math.cos(s),Math.sin(s)],r=Math.sqrt(lv/Q(u)),b=mul(B,[r*u[0],r*u[1]]);xs.push(b[0]);ys.push(b[1]);}pTop.line(xs,ys,col,lw,dash);};
+  ellp(u=>E.M[0][0]*u[0]*u[0]+2*E.M[0][1]*u[0]*u[1]+E.M[1][1]*u[1]*u[1],1,C.ink,2.4);ellp(u=>E.K[0][0]*u[0]*u[0]+2*E.K[0][1]*u[0]*u[1]+E.K[1][1]*u[1]*u[1],1,C.plum,2.2,[7,4]);
+  [0,1].forEach(r=>{const b=mul(B,E.phi[r]),n=Math.hypot(b[0],b[1]);pTop.line([-b[0]/n*3*bd,b[0]/n*3*bd],[-b[1]/n*3*bd,b[1]/n*3*bd],r?C.orange:C.blue,2);});
+  pTop.line(trailX.map(q=>mul(B,q)[0]),trailX.map(q=>mul(B,q)[1]),'#e6a3ad',1.8);const bx=mul(B,x);pTop.dot(bx[0],bx[1],C.red,7,'#fff');
+  const lab=tau<0.03?'physical q':Math.abs(tau-1)<0.03?'mass-weighted q̃ = M^½ q':tau>1.97?'modal η = Ψᵀ q̃':tau<1?'scaling by M^½ (stage 1)':'rotating by −α (stage 2)';
+  pTop.text(lab,-bd*0.96,bd*0.92,C.copper,{bold:true,size:13});
+  // energy
+  const Tn=Tf(E,v),Vn=Vf(E,x),Et=Tn+Vn;
+  pE.set({xmin:ts-12,xmax:ts,ymin:0,ymax:Et*1.2||1});pE.begin();pE.axes({xlabel:'time →',ylabel:'energy',xticks:[]});
+  pE.line(hist.map(h=>h[0]),hist.map(h=>h[1]),C.orange,2.4);pE.line(hist.map(h=>h[0]),hist.map(h=>h[2]),C.blue,2.4);pE.line(hist.map(h=>h[0]),hist.map(h=>h[1]+h[2]),C.ink,1.8,[5,3]);
+  // readout
+  const fm=m=>'\\begin{bmatrix}'+f3(m[0][0])+'&'+f3(m[0][1])+'\\\\'+f3(m[1][0])+'&'+f3(m[1][1])+'\\end{bmatrix}';
+  const fv=a=>'\\begin{Bmatrix}'+f3(a[0])+'\\\\'+f3(a[1])+'\\end{Bmatrix}';
+  const Kt=E.Kt,w2=E.lam,K=x=>'\\('+x+'\\)';
+  const PTM=mm(E.phi,E.M),B2=Bmat(E,2),err=Math.max(Math.abs(B2[0][0]-PTM[0][0]),Math.abs(B2[0][1]-PTM[0][1]),Math.abs(B2[1][0]-PTM[1][0]),Math.abs(B2[1][1]-PTM[1][1]));
+  ro(S('ro'),[['Stage \\(\\tau\\)',tau.toFixed(3)],['\\(\\vb{M}\\)',K(fm(E.M))],['\\(\\vb{M}^{1/2}\\)',K(fm(E.Mh))],['\\(\\vb{B}(\\tau)\\) , with \\(\\vb{u}=\\vb{B}\\vb{q}\\)',K(fm(B))],['\\(\\vb{K}\\)',K(fm(E.K))],['\\(\\tilde{\\vb{K}}=\\vb{M}^{-1/2}\\vb{K}\\vb{M}^{-1/2}\\)',K(fm(Kt))],['Eigenvalues of \\(\\tilde{\\vb{K}}\\) (\\(=\\omega_r^2\\))',K(w2[0].toFixed(4)+',\\ '+w2[1].toFixed(4))],['Rotation angle \\(\\alpha\\) of \\(\\vb{\\psi}_1\\)',K((E.alpha*180/Math.PI).toFixed(2)+'^\\circ')],
+   ['\\(\\vb{\\psi}_1,\\ \\vb{\\psi}_2\\) (orthonormal)',K(fv(E.psi[0])+',\\ '+fv(E.psi[1]))],['\\(\\vb{\\psi}_1\\!\\cdot\\!\\vb{\\psi}_2\\)',K(f3(E.psi[0][0]*E.psi[1][0]+E.psi[0][1]*E.psi[1][1]))],
+   ['Check: \\(\\max|\\vb{B}(2)-\\vb{\\Phi}^{\\T}\\vb{M}|\\)',K(err.toExponential(1))],
+   ['\\(T,\\ V,\\ T+V\\) now',K(Tn.toFixed(4)+',\\ '+Vn.toFixed(4)+',\\ '+Et.toFixed(4))]]);
+  // projection of the ball's present state: q = Phi^T M x, qdot = Phi^T M xdot
+  const q=mul(PTM,x),qd=mul(PTM,v),Tq=0.5*(qd[0]*qd[0]+qd[1]*qd[1]),Vq=0.5*(w2[0]*q[0]*q[0]+w2[1]*q[1]*q[1]),Mx=mul(E.M,x),Mv=mul(E.M,v);
+  ro(S('ro2'),[['\\(\\vb{q},\\ \\dot{\\vb{q}}\\) (ball)',K(fv(x)+',\\ '+fv(v))],['\\(\\vb{M}\\vb{q},\\ \\vb{M}\\dot{\\vb{q}}\\)',K(fv(Mx)+',\\ '+fv(Mv))],['\\(\\vb{\\Phi}^{\\T}\\vb{M}\\) (rows are \\(\\vb{\\phi}_r^{\\T}\\vb{M}\\))',K(fm(PTM))],
+   ['\\(\\vb{\\eta}=\\vb{\\Phi}^{\\T}\\vb{M}\\vb{q}\\)',K(fv(q))],['\\(\\dot{\\vb{\\eta}}=\\vb{\\Phi}^{\\T}\\vb{M}\\dot{\\vb{q}}\\)',K(fv(qd))],
+   ['\\(T\\): from \\(\\dot{\\vb{q}}\\), from \\(\\tfrac12\\sum\\dot {\\eta}_r^2\\)',K(Tn.toFixed(5)+',\\ '+Tq.toFixed(5))],['\\(V\\): from \\(\\vb{q}\\), from \\(\\tfrac12\\sum\\omega_r^2{\\eta}_r^2\\)',K(Vn.toFixed(5)+',\\ '+Vq.toFixed(5))]]);
+}
+function autoTau(u){ // 0 hold, 0->1, hold, 1->2, hold, 2->0
+  const seg=[1.2,2.6,1.2,2.6,1.2,3.2],tot=seg.reduce((a,b)=>a+b,0);let s=u%tot,i=0;while(s>seg[i]){s-=seg[i];i++;}const f=s/seg[i],e=f*f*(3-2*f);
+  return [0,e,1,1+e,2,2-2*e][i];}
+function step(dt){
+  const E=sys();prep(E);const w1=Math.sqrt(E.lam[0]);tt+=dt*(TAU/6)/w1;ts+=dt;
+  const m=motion(E,val('a0')*Math.PI/180);trailX.push(m.x.slice());trailV.push(m.v.slice());if(trailX.length>160)trailX.shift();if(trailV.length>160)trailV.shift();
+  hist.push([ts,Tf(E,m.v),Vf(E,m.x)]);while(hist.length&&hist[0][0]<ts-12.2)hist.shift();
+  if(S('auto').checked){autoU+=dt;setVal('tau',autoTau(autoU));}
+  if(S('rot').checked&&!cam.drag)cam.yaw+=dt*0.25;
+}
+const reset=()=>{hist=[];trailX=[];trailV=[];draw();};
+bind(['m1','m2','k1','k2','k3','pm1','pm2','pl1','pl2','pg','cm1','cm2','cl','ck','cg','a0'],reset);
+function showSys(){const s=S('sys').value;[].forEach.call(document.querySelectorAll('[data-sys]'),el=>{el.style.display=el.dataset.sys===s?'':'none';});}
+S('sys').addEventListener('change',()=>{showSys();cache.key='';tt=0;reset();});showSys();
+S('tau').addEventListener('input',()=>{S('auto').checked=false;draw();});
+[['s0',0],['s1',1],['s2',2]].forEach(([id,v])=>S(id).onclick=()=>{S('auto').checked=false;setVal('tau',v);draw();});
+const ctl=animate(dt=>{step(dt);draw();});
+S('play').onclick=e=>{ctl.paused=!ctl.paused;e.target.textContent=ctl.paused?'Start motion':'Pause motion';};
+if(ctl.paused){S('play').textContent='Start motion';S('auto').checked=false;S('rot').checked=false;}
+window.addEventListener('resize',draw);draw();
+})();
+</script>
+</body>
+</html>

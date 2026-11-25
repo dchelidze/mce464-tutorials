@@ -1,0 +1,86 @@
+/* MCE 464 geometric tutorials: shared style (deck palette: cream, navy, copper) */
+:root{
+  --bg:#f6f3ec; --card:#fffdf8; --ink:#1b2a3a; --muted:#5d6675; --rule:#d9d3c4;
+  --copper:#b5632c; --navy:#16263a; --blue:#0072BD; --orange:#D95319; --plum:#67355C;
+  --red:#A2142F; --green:#055432;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:0 16px 56px}
+header.top{background:var(--navy);color:#fff;padding:22px 0 24px;margin-bottom:26px}
+header.top .wrap{padding-bottom:0}
+.kicker{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#e0a171;font-weight:600}
+h1{font-size:clamp(26px,4.4vw,38px);line-height:1.15;margin:6px 0 8px;font-weight:700}
+.lede{margin:0;color:#d5dbe4;max-width:70ch}
+h2{font-size:22px;margin:38px 0 6px;padding-top:6px;border-top:2px solid var(--copper);display:inline-block;padding-right:14px}
+h3{font-size:17px;margin:20px 0 4px}
+p{margin:.5em 0;max-width:78ch}
+nav.tn{font-size:14px;margin:0 0 6px;display:flex;flex-wrap:wrap;gap:6px 18px}
+nav.tn a{color:var(--copper);text-decoration:none;font-weight:600}
+nav.tn a:hover{text-decoration:underline}
+header.top nav.tn a{color:#f0c9a8}
+.figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px;margin:14px 0}
+.fig{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:10px 12px 12px;min-width:0}
+.fig canvas{display:block;width:100%;touch-action:none}
+.fig .cap{font-size:13.5px;color:var(--muted);margin:6px 2px 0;line-height:1.45}
+.fig .ttl{font-size:14px;font-weight:700;color:var(--copper);margin:0 2px 4px}
+.ctl{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:12px 14px;margin:14px 0;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:10px 22px;align-items:end}
+.ctl label{display:block;font-size:14px;font-weight:600}
+.ctl label span.u{font-weight:400;color:var(--muted)}
+.ctl output{font-variant-numeric:tabular-nums;color:var(--copper);font-weight:700;margin-left:6px}
+.ctl input[type=range]{width:100%;accent-color:var(--copper);margin:4px 0 0}
+.ctl select{width:100%;font:inherit;padding:5px 6px;border:1px solid var(--rule);border-radius:6px;background:#fff;color:var(--ink)}
+.ctl .chk{font-weight:500}
+button{font:inherit;font-size:14px;font-weight:600;border:1px solid var(--copper);background:#fff;color:var(--copper);
+  border-radius:6px;padding:5px 11px;cursor:pointer;margin:2px 4px 2px 0}
+button:hover{background:var(--copper);color:#fff}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.note{background:#fff;border-left:4px solid var(--copper);padding:10px 14px;margin:14px 0;border-radius:0 8px 8px 0;max-width:80ch}
+.note b.h{display:block;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--copper);margin-bottom:2px}
+.ro{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.ro td,.ro th{padding:3px 8px 3px 0;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+.ro th{font-weight:600;color:var(--muted);width:46%}
+.eq{font-family:"Cambria Math","STIX Two Math",Cambria,Georgia,serif;font-size:1.06em;white-space:nowrap}
+.eqb{font-family:"Cambria Math","STIX Two Math",Cambria,Georgia,serif;font-size:1.2em;text-align:center;
+  background:#fff;border:1px solid var(--rule);border-radius:8px;padding:8px 10px;margin:12px 0;overflow-x:auto}
+.eq i,.eqb i{font-style:italic}
+.m{font-weight:700;font-style:italic}
+.sf{font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;font-size:.78em;font-style:normal}
+.sw{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-1px;margin-right:4px}
+details{background:#fff;border:1px solid var(--rule);border-radius:8px;padding:8px 12px;margin:8px 0;max-width:80ch}
+summary{cursor:pointer;font-weight:600}
+details p{margin:6px 0 2px}
+.slides{font-size:13.5px;color:var(--muted)}
+footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--rule);font-size:13px;color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px;margin:16px 0}
+.card{display:block;background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:14px 16px;text-decoration:none;color:inherit}
+.card:hover{border-color:var(--copper)}
+.card .n{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--copper);font-weight:700}
+.card h3{margin:4px 0 6px;font-size:19px}
+.card p{font-size:14.5px;color:var(--muted);margin:0}
+.card.soon{opacity:.6}
+@media print{header.top{background:#fff;color:#000}.ctl{display:none}}
+.eqb .katex-display{margin:0}
+.eqb{font-size:1em}
+.katex{font-size:1.06em}
+.ttl .katex,summary .katex{font-size:1em}
+/* left-hand parameter panel */
+.wrap.has-side{max-width:1360px}
+.layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:26px;align-items:start}
+.layout .side{position:sticky;top:10px;max-height:calc(100vh - 20px);overflow:auto;background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:12px 14px;order:0}
+.layout .main{min-width:0}
+.side-h{font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--copper);margin-bottom:8px}
+.side .grp{margin:0 0 14px;padding-top:10px;border-top:1px solid var(--rule)}
+.side .grp:first-of-type{border-top:0;padding-top:0}
+.side .grp-t{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px}
+.side .ctl{grid-template-columns:1fr;gap:12px;margin:0;padding:0;border:0;background:none;border-radius:0}
+.side .ctl>div{min-width:0}
+.side button{margin:2px 4px 2px 0}
+@media (max-width:980px){.layout{grid-template-columns:1fr}.layout .side{position:static;max-height:none}}
+
+#gal,.galb{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}#gal button,.galb button{margin:0!important;padding:4px 8px;font-size:12.5px}
+.galb button.on{background:var(--copper);color:#fff}
+.card .v2{color:var(--ink);letter-spacing:.06em}

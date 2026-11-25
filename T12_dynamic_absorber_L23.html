@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tutorial 12: The Tuned Absorber (version 1)</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <nav class="tn"><a href="index.html">All tutorials</a><a href="T11_modal_coordinates_L22.html">&larr; Tutorial 11</a></nav>
+  <div class="kicker">MCE 464 &middot; Tutorial 12 &middot; Lecture 23 &middot; version 1</div>
+  <h1>The Tuned Absorber: Antiresonance and Fixed Points</h1>
+  <p class="lede">A small secondary mass, tuned to the disturbance frequency, makes the main mass stand still by pushing back with exactly the force that drives it. Adding damping trades the sharp notch for two lower peaks, and every curve passes through the same two fixed points.</p>
+</div></header>
+<div class="wrap">
+
+<h2>1. Why the main mass stands still</h2>
+<p>A main mass \(m_1\), spring \(k_1\), carries an absorber \(m_2\) on a spring \(k_2\) and damper \(c_2\). With the force \(F\cos\Omega t\) on \(m_1\), the second equation of motion gives the absorber's force on the main mass,
+$$ X_2=\frac{k_2+i c_2\Omega}{k_2-m_2\Omega^2+i c_2\Omega}\,X_1 . $$
+For an undamped absorber (\(c_2=0\)) at \(\Omega=\omega_a=\sqrt{k_2/m_2}\) the denominator vanishes, so \(X_1\) must vanish too: the absorber carries a finite amplitude \(X_2=-F/k_2\) and its spring force exactly cancels \(F\). Geometrically, the dynamic stiffness of the absorber becomes infinite at its own natural frequency, which is an <b>antiresonance</b> of the main mass, and the main mass response has a notch to zero at \(\Omega=\omega_a\).</p>
+<p>The price is that two coupled oscillators have two resonances, one on each side of the notch. With the non-dimensional quantities
+$$ \mu=\frac{m_2}{m_1},\quad f=\frac{\omega_a}{\omega_1},\quad r=\frac{\Omega}{\omega_1},\quad \zeta_a=\frac{c_2}{2m_2\omega_a}, $$
+the undamped resonances solve \(r^4-(1+f^2+\mu f^2)\,r^2+f^2=0\). Their separation grows like \(\sqrt{\mu}\).</p>
+
+<div class="ctl">
+  <div><label>Mass ratio \(\mu=m_2/m_1\)<output id="mu_o"></output><input type="range" id="mu" min="0.02" max="0.5" step="0.005" value="0.1" data-dp="3"></label></div>
+  <div><label>Tuning \(f=\omega_a/\omega_1\)<output id="f_o"></output><input type="range" id="f" min="0.5" max="1.5" step="0.005" value="0.909" data-dp="3"></label></div>
+  <div><label>Absorber damping \(\zeta_a\)<output id="za_o"></output><input type="range" id="za" min="0" max="0.6" step="0.005" value="0.1" data-dp="3"></label></div>
+  <div><label>Main-mass damping \(\zeta_1\)<output id="z1_o"></output><input type="range" id="z1" min="0" max="0.1" step="0.001" value="0.005" data-dp="3"></label></div>
+  <div><button id="opt">Set Den Hartog optimum</button></div>
+</div>
+<div class="ctl">
+  <div><label>Driving frequency \(r=\Omega/\omega_1\)<output id="r_o"></output><input type="range" id="r" min="0.2" max="2" step="0.005" value="0.909" data-dp="3"></label></div>
+  <div><button id="rf">\(r=f\) (notch)</button><button id="r1">\(r=1\)</button><button id="play">Pause motion</button></div>
+</div>
+
+<div class="figs">
+  <div class="fig"><div class="ttl">Main-mass response \(|X_1|\,k_1/F\)</div><canvas id="ca" data-ar="0.7"></canvas>
+    <div class="cap">Grey: without the absorber (its peak is \(1/2\zeta_1\)). Blue: with it. The dashed vertical line marks the notch frequency \(r=f\); the red dot is your driving frequency.</div></div>
+  <div class="fig"><div class="ttl">Fixed points \(P\) and \(Q\)</div><canvas id="cb" data-ar="0.7"></canvas>
+    <div class="cap">Grey: absorber damping \(\zeta_a=0,\,0.05,\,0.1,\,0.2,\,0.5\) and \(\infty\) (absorber locked to the main mass). All curves cross at \(P\) and \(Q\) (green) when \(\zeta_1=0\).</div></div>
+  <div class="fig"><div class="ttl">Resonances against tuning (undamped)</div><canvas id="cc" data-ar="0.7"></canvas>
+    <div class="cap">Dotted: uncoupled frequencies \(r=1\) and \(r=f\). The coupling pushes the two resonances apart (avoided crossing); the gap at \(f=1\) is about \(\sqrt{\mu}\).</div></div>
+  <div class="fig"><div class="ttl">Motion at the driving frequency</div><canvas id="cd" data-ar="0.5"></canvas>
+    <div class="cap">Blue: main mass; orange: absorber. Amplitudes are shown in proportion to each other, scaled to fit.</div></div>
+</div>
+<div class="figs"><div class="fig"><div class="ttl">Read-out</div><table class="ro" id="ro"></table></div>
+  <div class="fig"><div class="ttl">What to notice</div>
+    <ol style="margin:4px 0 0 18px;padding:0">
+      <li>\(\zeta_a=0\): deep notch at \(r=f\) but two sharp peaks. A small detuning from \(f\) ruins the notch, so a lightly damped absorber suits a machine running at one speed.</li>
+      <li>Raise \(\zeta_a\): the notch fills in, and the peaks drop. At large \(\zeta_a\) the absorber locks to the main mass and the system has a single, lower resonance \(1/\sqrt{1+\mu}\).</li>
+      <li>The two peaks are equal for a particular \(f\) and \(\zeta_a\): the optimum (button). Then the curve runs level through \(P\) and \(Q\) and the amplitude is minimized over a band.</li>
+      <li>Larger \(\mu\) widens the band (more separated peaks) and lowers the peaks, at the cost of mass.</li>
+    </ol></div></div>
+
+<h2>2. Fixed points and the optimum</h2>
+<p>With \(\zeta_1=0\) the main-mass response is
+$$ \frac{X_1k_1}{F}=\frac{f^2-r^2+2i\zeta_af\,r}{(1-r^2)(f^2-r^2)-\mu f^2r^2+2i\zeta_af\,r\,(1-r^2-\mu r^2)}. $$
+Two curves with different \(\zeta_a\) intersect where the magnitude does not depend on \(\zeta_a\): this happens at the two frequencies \(P,Q\) that solve \(|X_1|_{\zeta_a=0}=|X_1|_{\zeta_a=\infty}\). Den Hartog's rule picks \(f\) so that \(P\) and \(Q\) have equal height, and \(\zeta_a\) so that the curve is horizontal at the higher of them:
+$$ f_{\mathrm{opt}}=\frac{1}{1+\mu},\qquad \zeta_{a,\mathrm{opt}}=\sqrt{\frac{3\mu}{8(1+\mu)^3}},\qquad \left|\frac{X_1k_1}{F}\right|_{\max}\approx\sqrt{1+\frac{2}{\mu}}. $$</p>
+
+<h2>3. Check yourself</h2>
+<details><summary>Why does a 10 % absorber on a lightly damped structure reduce the resonant amplitude from 100 to about 4.6?</summary>
+<p>With \(\mu=0.1\) the optimum gives \(\sqrt{1+2/0.1}=\sqrt{21}\approx4.6\). The energy the main mass would store at resonance now flows into the absorber and is dissipated there, so the peak is set by \(\mu\), not by the structure's own damping.</p></details>
+<details><summary>An undamped absorber is tuned to 50 Hz. What happens if the machine speed drifts to 55 Hz?</summary>
+<p>The notch is narrow, so the main mass is no longer stationary, and 55 Hz may lie near the upper resonance. The fix is damping (a wider, shallower notch) or a self-tuning absorber.</p></details>
+<details><summary>How does this relate to isolation (Tutorial 5)?</summary>
+<p>An isolator reduces transmitted force above \(r=\sqrt2\) but offers nothing at resonance. An absorber works at a chosen frequency, even at resonance. They are used together: isolate at high speeds, absorb at the running-speed resonance.</p></details>
+
+<footer>Slides: Lecture 23 (isolated machine, force transmissibility, isolation threshold, dynamic absorber, antiresonance, mass ratio, tuning rule, damped absorber). Unit conventions: \(m_1=1\), \(k_1=1\), so \(\omega_1=1\). Labels in the plots are plain text; equations are typeset with KaTeX.</footer>
+</div>
+
+<script src="assets/katex/katex.min.js"></script>
+<script src="assets/katex/auto-render.min.js"></script>
+<script src="assets/math.js"></script>
+<script src="assets/phonebar.js"></script>
+<script src="assets/layout.js"></script>
+<script src="assets/lib.js"></script>
+<script>
+(function(){
+const {ro,TeX,C,Plot,bind,val,setVal,animate,TAU}=TUT;
+const S=id=>document.getElementById(id);
+const pa=new Plot(S('ca'),{pad:[52,12,12,36],xmin:0,xmax:2,ymin:0.01,ymax:200,ylog:true});
+const pb=new Plot(S('cb'),{pad:[48,12,12,36],xmin:0.5,xmax:1.5,ymin:0,ymax:10});
+const pc=new Plot(S('cc'),{pad:[48,12,12,36],xmin:0.5,xmax:1.5,ymin:0.4,ymax:1.8});
+const pd=new Plot(S('cd'),{pad:[8,8,8,8],xmin:0,xmax:12,ymin:-1.6,ymax:1.6});
+const cm=(a,b)=>[a[0]*b[0]-a[1]*b[1],a[0]*b[1]+a[1]*b[0]];
+const cd=(a,b)=>{const d=b[0]*b[0]+b[1]*b[1];return [(a[0]*b[0]+a[1]*b[1])/d,(a[1]*b[0]-a[0]*b[1])/d];};
+const ca=a=>Math.hypot(a[0],a[1]);
+function resp(r,mu,f,za,z1){
+  const k2=mu*f*f,c2=2*za*mu*f;
+  const Z11=[1-r*r+k2,2*z1*r+c2*r],Z22=[k2-mu*r*r,c2*r],Z12=[-k2,-c2*r];
+  const det=[cm(Z11,Z22)[0]-cm(Z12,Z12)[0],cm(Z11,Z22)[1]-cm(Z12,Z12)[1]];
+  return {X1:cd(Z22,det),X2:cd([-Z12[0],-Z12[1]],det)};
+}
+const X1=(r,mu,f,za,z1)=>ca(resp(r,mu,f,za,z1).X1);
+const sdof=(r,z1)=>1/Math.hypot(1-r*r,2*z1*r);
+let th=0;
+function resonances(mu,f){const b=1+f*f+mu*f*f,d=Math.sqrt(Math.max(b*b-4*f*f,0));return [Math.sqrt((b-d)/2),Math.sqrt((b+d)/2)];}
+function drawAll(){
+  const mu=val('mu'),f=val('f'),za=val('za'),z1=val('z1'),r=val('r');
+  const rs=[];for(let i=0;i<=700;i++)rs.push(2*i/700+1e-4);
+  pa.begin();pa.axes({xlabel:'r = Ω/ω₁',ylabel:'|X₁| k₁/F'});
+  pa.line([f,f],[0.01,200],C.axis,1.2,[4,4]);
+  pa.line(rs,rs.map(q=>sdof(q,z1)),'#b9b5a8',2.2);pa.line(rs,rs.map(q=>X1(q,mu,f,za,z1)),C.blue,2.8);
+  pa.dot(r,X1(r,mu,f,za,z1),C.red,6.5,'#fff');pa.text('notch r = f',f,0.014,C.muted,{dx:4,dy:-8,size:12});
+  // fixed points family (z1=0)
+  pb.begin();pb.axes({xlabel:'r = Ω/ω₁',ylabel:'|X₁| k₁/F'});
+  const rb=[];for(let i=0;i<=800;i++)rb.push(0.5+i/800);
+  [0,0.05,0.1,0.2,0.5,1e4].forEach(z=>pb.line(rb,rb.map(q=>Math.min(X1(q,mu,f,z,0),10)),'#c9c4b4',1.6));
+  pb.line(rb,rb.map(q=>Math.min(X1(q,mu,f,za,0),10)),C.blue,2.8);
+  const fp=[];for(let i=1;i<rb.length;i++){const a=X1(rb[i-1],mu,f,0,0)-X1(rb[i-1],mu,f,1e4,0),b=X1(rb[i],mu,f,0,0)-X1(rb[i],mu,f,1e4,0);if(isFinite(a)&&isFinite(b)&&a*b<0){const t=a/(a-b),rr=rb[i-1]+t*(rb[i]-rb[i-1]);fp.push([rr,X1(rr,mu,f,1e4,0)]);}}
+  fp.forEach((p,i)=>{pb.dot(p[0],Math.min(p[1],10),C.green,6.5,'#fff');pb.text(i?'Q':'P',p[0],Math.min(p[1],10),C.green,{dx:8,dy:-9,bold:true});});
+  // resonances vs tuning
+  pc.set({ymin:0.4,ymax:1.8});pc.begin();pc.axes({xlabel:'tuning f = ωa/ω₁',ylabel:'resonance r'});
+  const fs=[],a=[],b=[];for(let i=0;i<=200;i++){const ff=0.5+i/200,rr=resonances(mu,ff);fs.push(ff);a.push(rr[0]);b.push(rr[1]);}
+  pc.line([0.5,1.5],[1,1],C.axis,1.2,[3,4]);pc.line(fs,fs,C.axis,1.2,[3,4]);pc.line(fs,a,C.blue,2.8);pc.line(fs,b,C.orange,2.8);
+  const rr=resonances(mu,f);pc.line([f,f],[0.4,1.8],C.red,1.2,[4,3]);pc.dot(f,rr[0],C.blue,6,'#fff');pc.dot(f,rr[1],C.orange,6,'#fff');
+  // motion
+  const R=resp(r,mu,f,za,z1),A1=ca(R.X1),A2=ca(R.X2),sc=1.0/Math.max(A1,A2,1e-9);
+  const x1=sc*(R.X1[0]*Math.cos(th)-R.X1[1]*Math.sin(th)),x2=sc*(R.X2[0]*Math.cos(th)-R.X2[1]*Math.sin(th));
+  pd.begin();const g=pd.g;
+  g.fillStyle='#e9e5d8';g.fillRect(pd.X(0)-6,pd.Y(1.4),6,pd.Y(-1.4)-pd.Y(1.4));
+  const w1=1.8,w2=0.7+1.6*Math.cbrt(mu),c1=3.2+0.9*x1,c2=8.4+0.9*x2;
+  function zig(x0,x1_,y,n,col){const xs=[x0,x0+0.12*(x1_-x0)],ys=[y,y],L=x1_-x0,pad=0.12*L;for(let i=0;i<n;i++){xs.push(x0+pad+(L-2*pad)*(i+0.5)/n);ys.push(y+(i%2?-0.28:0.28));}xs.push(x1_-pad,x1_);ys.push(y,y);pd.line(xs,ys,col,1.8);}
+  zig(0,c1-w1/2,0,7,C.axis);zig(c1+w1/2,c2-w2/2,0,5,C.plum);
+  [[c1,w1,'m₁',C.blue,'rgba(0,114,189,.22)'],[c2,w2,'m₂',C.orange,'rgba(217,83,25,.22)']].forEach(([c,w,l,col,fill])=>{const X0=pd.X(c-w/2),Y0=pd.Y(w/2*0.9),W=pd.X(c+w/2)-X0,H=pd.Y(-w/2*0.9)-Y0;g.fillStyle=fill;g.strokeStyle=col;g.lineWidth=2;g.fillRect(X0,Y0,W,H);g.strokeRect(X0,Y0,W,H);pd.text(l,c,0,C.ink,{align:'center',bold:true});});
+  // readout
+  const base=sdof(r,z1),rows=[['Resonances (undamped)',rr[0].toFixed(3)+'  and  '+rr[1].toFixed(3)],['\\(|X_1|k_1/F\\) at \\(r\\)',A1.toFixed(3)+'   (no absorber: '+base.toFixed(3)+')'],
+   ['Reduction at \\(r\\)',(20*Math.log10(base/Math.max(A1,1e-12))).toFixed(1)+' dB'],['\\(|X_2|/|X_1|\\) at \\(r\\)',(A2/Math.max(A1,1e-12)).toFixed(2)],
+   ['Fixed points \\(P,\\ Q\\) (\\(\\zeta_1=0\\))',fp.map(p=>TeX('r='+p[0].toFixed(3))+', height '+p[1].toFixed(2)).join('  ;  ')||'—'],
+   ['Den Hartog optimum',  TeX('f='+(1/(1+mu)).toFixed(3))+',  '+TeX('\\zeta_a='+Math.sqrt(3*mu/(8*Math.pow(1+mu,3))).toFixed(3))+',  peak '+TeX('\\approx '+Math.sqrt(1+2/mu).toFixed(2))]];
+  ro(S('ro'),rows);
+}
+bind(['mu','f','za','z1','r'],drawAll);
+S('opt').onclick=()=>{const mu=val('mu');setVal('f',1/(1+mu));setVal('za',Math.sqrt(3*mu/(8*Math.pow(1+mu,3))));drawAll();};
+S('rf').onclick=()=>{setVal('r',val('f'));drawAll();};S('r1').onclick=()=>{setVal('r',1);drawAll();};
+const ctl=animate(dt=>{th=(th+4*dt)%(TAU*100);drawAll();});
+S('play').onclick=e=>{ctl.paused=!ctl.paused;e.target.textContent=ctl.paused?'Start motion':'Pause motion';};
+if(ctl.paused)S('play').textContent='Start motion';
+window.addEventListener('resize',drawAll);drawAll();
+})();
+</script>
+</body>
+</html>

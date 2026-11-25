@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tutorial 14: Virtual Displacements and Equivalent Properties</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+/* controls that act on one figure sit with that figure, not in the sidebar */
+.figbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:12px 0 2px;padding:8px 12px;background:var(--card);border:1px solid var(--rule);border-radius:10px}
+.figbar button{margin:0}
+.figbar label{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:14px;font-weight:600}
+.figbar label.chk{font-weight:500}
+.figbar .sep{width:1px;align-self:stretch;background:var(--rule);margin:0 4px}
+@media (max-width:980px){.katex-display{overflow-x:auto;overflow-y:hidden;padding:.45em 0}}
+.side .hid{display:none}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <nav class="tn"><a href="index.html">All tutorials</a><a href="T13_beam_modes_projection_L24.html">Tutorial 13 &rarr;</a></nav>
+  <div class="kicker">MCE 464 &middot; Tutorial 14 &middot; Lectures 8&ndash;9</div>
+  <h1>Virtual Displacements and Equivalent Properties</h1>
+  <p class="lede">One coordinate must fix every motion in a mechanism. Give it a small virtual displacement \(\delta q\) and every mass, spring and damper moves by its own multiple of \(\delta q\). Those multiples are geometry ratios. Kinetic and potential energy are quadratic, so the ratios enter the equivalent inertia and stiffness as squares. A different coordinate changes the numbers and the units, but never the natural frequency.</p>
+</div></header>
+<div class="wrap">
+
+<h2>1. One coordinate, every motion</h2>
+<p>Pick a coordinate \(q\) and write each body's velocity and each element's deformation as a multiple of it: \(v_i=(\partial v_i/\partial q)\,\dot q\), \(\omega_i=(\partial\omega_i/\partial q)\,\dot q\), \(\delta_j=(\partial\delta_j/\partial q)\,q\). Substituting into the energy and dissipation (Lecture 8, slides 5&ndash;6) gives
+$$ T=\tfrac12 m_\text{eq}\dot q^2,\qquad V=\tfrac12 k_\text{eq}q^2,\qquad \mathcal D=\tfrac12 c_\text{eq}\dot q^2, $$
+with
+$$ m_\text{eq}=\sum_i m_i\Big(\frac{\partial v_i}{\partial q}\Big)^2+\sum_i J_i\Big(\frac{\partial \omega_i}{\partial q}\Big)^2,\qquad k_\text{eq}=\sum_j k_j\Big(\frac{\partial \delta_j}{\partial q}\Big)^2,\qquad c_\text{eq}=\sum_j c_j\Big(\frac{\partial \dot\delta_j}{\partial \dot q}\Big)^2. $$
+Lagrange's equation then gives \(m_\text{eq}\ddot q+c_\text{eq}\dot q+k_\text{eq}q=Q_q\) and \(\omega_n=\sqrt{k_\text{eq}/m_\text{eq}}\). Choose a mechanism in the left panel. Drag in the picture to impose a virtual displacement; the arrows show how far each element moves for that \(\delta q\).</p>
+
+<div class="ctl" data-title="Mechanism">
+  <div><label>Mechanism<select id="mech" class="gal"><option value="lever">lever (L8 s10)</option><option value="roll">rolling cylinder (L8 s11)</option><option value="pulley">pulley (L8 s12)</option><option value="gear">gear pair (L9 s11, s13)</option></select></label></div>
+  <div><label>Coordinate \(q\)<select id="crd" class="gal"><option value="0">first</option><option value="1">second</option></select></label></div>
+</div>
+<div class="ctl" data-title="Parameters" id="pars">
+  <div data-m="lever"><label>Mass \(m\) <span class="u">kg</span><output id="Lm_o"></output><input type="range" id="Lm" min="0.2" max="5" step="0.1" value="2" data-dp="1"></label></div>
+  <div data-m="lever"><label>Mass arm \(b\) <span class="u">m</span><output id="Lb_o"></output><input type="range" id="Lb" min="0.1" max="1" step="0.01" value="0.6"></label></div>
+  <div data-m="lever"><label>Lever inertia \(J_O\) <span class="u">kg&middot;m&sup2;</span><output id="LJ_o"></output><input type="range" id="LJ" min="0" max="0.5" step="0.01" value="0.05"></label></div>
+  <div data-m="lever"><label>Spring \(k\) <span class="u">N/m</span><output id="Lk_o"></output><input type="range" id="Lk" min="100" max="5000" step="50" value="1000" data-dp="0"></label></div>
+  <div data-m="lever"><label>Spring arm \(a\) <span class="u">m</span><output id="La_o"></output><input type="range" id="La" min="0.05" max="1" step="0.01" value="0.3"></label></div>
+  <div data-m="lever"><label>Damper \(c\) <span class="u">N&middot;s/m</span><output id="Lc_o"></output><input type="range" id="Lc" min="0" max="60" step="1" value="10" data-dp="0"></label></div>
+  <div data-m="lever"><label>Damper arm \(d\) <span class="u">m</span><output id="Ld_o"></output><input type="range" id="Ld" min="0.05" max="1" step="0.01" value="0.45"></label></div>
+  <div data-m="roll"><label>Mass \(m\) <span class="u">kg</span><output id="Rm_o"></output><input type="range" id="Rm" min="0.5" max="10" step="0.1" value="4" data-dp="1"></label></div>
+  <div data-m="roll"><label>Radius \(R\) <span class="u">m</span><output id="RR_o"></output><input type="range" id="RR" min="0.05" max="0.3" step="0.01" value="0.2"></label></div>
+  <div data-m="roll"><label>Shape \(I_G/mR^2\) (0.5 disk, 1 ring)<output id="Rb_o"></output><input type="range" id="Rb" min="0" max="1" step="0.05" value="0.5"></label></div>
+  <div data-m="roll"><label>Spring \(k\) <span class="u">N/m</span><output id="Rk_o"></output><input type="range" id="Rk" min="100" max="5000" step="50" value="2000" data-dp="0"></label></div>
+  <div data-m="roll"><label>Spring height above contact \(h/R\)<output id="Rh_o"></output><input type="range" id="Rh" min="0.2" max="2" step="0.05" value="1"></label></div>
+  <div data-m="pulley"><label>Mass \(m\) <span class="u">kg</span><output id="Pm_o"></output><input type="range" id="Pm" min="0.5" max="10" step="0.1" value="3" data-dp="1"></label></div>
+  <div data-m="pulley"><label>Pulley inertia \(J\) <span class="u">kg&middot;m&sup2;</span><output id="PJ_o"></output><input type="range" id="PJ" min="0" max="0.1" step="0.002" value="0.02" data-dp="3"></label></div>
+  <div data-m="pulley"><label>Pulley radius \(R\) <span class="u">m</span><output id="PR_o"></output><input type="range" id="PR" min="0.04" max="0.2" step="0.01" value="0.1"></label></div>
+  <div data-m="pulley"><label>Spring \(k\) <span class="u">N/m</span><output id="Pk_o"></output><input type="range" id="Pk" min="100" max="5000" step="50" value="1500" data-dp="0"></label></div>
+  <div data-m="gear"><label>Input inertia \(J_1\) <span class="u">kg&middot;m&sup2;</span><output id="GJ1_o"></output><input type="range" id="GJ1" min="0.005" max="0.1" step="0.005" value="0.02" data-dp="3"></label></div>
+  <div data-m="gear"><label>Output inertia \(J_2\) <span class="u">kg&middot;m&sup2;</span><output id="GJ2_o"></output><input type="range" id="GJ2" min="0.005" max="0.2" step="0.005" value="0.08" data-dp="3"></label></div>
+  <div data-m="gear"><label>Input teeth \(N_1\)<output id="GN1_o"></output><input type="range" id="GN1" min="10" max="60" step="1" value="20" data-dp="0"></label></div>
+  <div data-m="gear"><label>Output teeth \(N_2\)<output id="GN2_o"></output><input type="range" id="GN2" min="10" max="60" step="1" value="40" data-dp="0"></label></div>
+  <div data-m="gear"><label>Input shaft \(k_1\) <span class="u">N&middot;m/rad</span><output id="Gk1_o"></output><input type="range" id="Gk1" min="0" max="64" step="1" value="16" data-dp="0"></label></div>
+  <div data-m="gear"><label>Output shaft \(k_2\) <span class="u">N&middot;m/rad</span><output id="Gk2_o"></output><input type="range" id="Gk2" min="0" max="64" step="1" value="0" data-dp="0"></label></div>
+</div>
+
+<div class="figbar"><button id="play">Release and play</button><button id="hold">Hold</button><span class="sep"></span><label class="chk"><input type="checkbox" id="arr" checked> show virtual-displacement arrows</label></div>
+<div class="figs">
+  <div class="fig"><div class="ttl" id="mt">Mechanism: drag to impose \(\delta q\)</div>
+    <canvas id="cm" data-ar="0.66"></canvas>
+    <div class="cap">Drag up and down (or left and right for the cylinder) to set the displacement; the motion is exaggerated for visibility. <span class="sw" style="background:#A2142F"></span>arrows: the displacement of each body or element point produced by \(\delta q\), labelled with its ratio. Release starts the free vibration at \(\omega_n\), slowed to a viewable rate in proportion.</div></div>
+  <div class="fig"><div class="ttl">Where \(m_\text{eq}\) and \(k_\text{eq}\) come from</div>
+    <canvas id="cb" data-ar="0.66"></canvas>
+    <div class="cap">Each segment is one body's \(m_i(\partial v_i/\partial q)^2\) (or \(J_i(\partial\omega_i/\partial q)^2\)) or one element's \(k_j(\partial\delta_j/\partial q)^2\), in the units of the chosen coordinate. Switch the coordinate: every segment rescales by the same factor, so the proportions and \(\omega_n\) stay put.</div></div>
+</div>
+<div class="figs">
+  <div class="fig"><div class="ttl">Equivalent model in the chosen coordinate</div><table class="ro" id="ro1"></table></div>
+  <div class="fig"><div class="ttl">Geometry ratios for this mechanism</div><table class="ro" id="ro2"></table></div>
+</div>
+
+<h2>2. What to notice</h2>
+<ol>
+  <li><b>Lever.</b> With the defaults, \(J_\text{eq}=J_O+mb^2=0.77\ \mathrm{kg\,m^2}\) and \(k_\text{eq}=ka^2=90\ \mathrm{N\,m/rad}\), so \(\omega_n=10.81\) rad/s. Switch to the mass displacement \(x=b\theta\): \(m_\text{eq}=2.139\) kg and \(k_\text{eq}=250\) N/m, the same \(\omega_n\). Move the spring outward and \(k_\text{eq}\) grows with \(a^2\), not \(a\).</li>
+  <li><b>Rolling cylinder.</b> A solid disk has \(m_\text{eq}=m+I_G/R^2=1.5m\), so \(\omega_n=\sqrt{2000/6}=18.26\) rad/s for the defaults. Rolling removes the rotation as a coordinate but keeps its kinetic energy (slide 11). Raise the spring to the top of the cylinder \((h/R=2)\): the attachment point moves twice as far as the center, so \(k_\text{eq}\) is four times larger and \(\omega_n\) doubles to 36.51 rad/s.</li>
+  <li><b>Pulley.</b> \(m_\text{eq}=m+J/R^2=3+0.02/0.01=5\) kg and \(\omega_n=17.32\) rad/s. A small pulley radius makes even a light pulley heavy in the translational coordinate.</li>
+  <li><b>Gear pair.</b> The defaults reproduce slide 13 of Lecture 9: \(J_\text{eq,1}=J_1+J_2(N_1/N_2)^2=0.040\ \mathrm{kg\,m^2}\), \(k_\theta=16\) N·m/rad, \(\omega_n=20\) rad/s. Referred to the output shaft instead, \(J_\text{eq,2}=0.16\) and \(k_\text{eq,2}=64\): again 20 rad/s. The gear ratio flips the sign of the rotation (the arrows point opposite ways), but energy uses its square.</li>
+</ol>
+
+<h2>3. Check yourself</h2>
+<details><summary>Why do geometry ratios enter as squares, when the displacements themselves scale linearly?</summary>
+<p>A displacement \(\delta_j=r_j\,q\) is linear in \(q\), but the energy \(\tfrac12k_j\delta_j^2=\tfrac12k_jr_j^2q^2\) is quadratic. The same holds for kinetic energy with velocity ratios. Equivalently, by virtual work, the spring force \(k_jr_jq\) acts through the virtual displacement \(r_j\,\delta q\), so one factor of \(r_j\) comes from the force and one from the displacement.</p></details>
+<details><summary>The gear constraint has a minus sign, \(\theta_2=-(N_1/N_2)\theta_1\). Where does it go?</summary>
+<p>Into the direction of motion only. Kinetic energy contains \(\dot\theta_2^2=(N_1/N_2)^2\dot\theta_1^2\), so the sign disappears from \(J_\text{eq}\). It matters again when a load or a damper couples the two shafts through a sign-sensitive quantity, for example an applied moment on the output shaft, whose generalized force is \(Q_{\theta_1}=-(N_1/N_2)\tau_2\).</p></details>
+<details><summary>Why is \(\omega_n\) the same in both coordinates when \(m_\text{eq}\) and \(k_\text{eq}\) both change?</summary>
+<p>If \(q'=s\,q\), then \(\partial v/\partial q'=(\partial v/\partial q)/s\) for every body and element. Both \(m_\text{eq}\) and \(k_\text{eq}\) are divided by \(s^2\), so their ratio is unchanged. The physical motion does not depend on what we call the coordinate (Lecture 9, slide 14).</p></details>
+<details><summary>For the lever, the slide uses \(x\approx b\theta\). When does that fail?</summary>
+<p>The exact vertical displacement of the mass is \(b\sin\theta\), so the exact velocity ratio is \(b\cos\theta\). The equivalent inertia \(mb^2\cos^2\theta\) then depends on the angle: the model becomes nonlinear. At \(\theta=0.1\) rad the factor \(\cos^2\theta\) is 0.990, a 1% change; at 0.3 rad it is 0.913. The linear model is the quadratic-energy approximation of slide 8.</p></details>
+
+<footer>Slides: Lecture 8 (generalized coordinate, energy inventory, equivalent inertia, Lagrange's equation, quadratic energy, lever mechanism, rolling constraint, pulley inertia, residual check) and Lecture 9 (axial and torsional stiffness, inertia reflection, torsional SDOF, radius transformation, gear train, torsional period, numerical example). The rolling cylinder's spring height \(h\) is an added parameter; the slide case is \(h=R\). Labels inside the plots are plain text; the equations on the page are typeset with KaTeX.</footer>
+</div>
+
+<script src="assets/katex/katex.min.js"></script>
+<script src="assets/katex/auto-render.min.js"></script>
+<script src="assets/math.js"></script>
+<script src="assets/phonebar.js"></script>
+<script src="assets/layout.js"></script>
+<script src="assets/lib.js"></script>
+<script>
+(function(){
+const {ro,TeX,C,Plot,bind,val,TAU,animate}=TUT;
+const S=id=>document.getElementById(id);
+const COLS=[C.blue,C.orange,C.yellow,C.plum,C.cyan,C.green];
+const UN={t:{m:'kg',k:'N/m',c:'N·s/m',q:'m'},r:{m:'kg·m²',k:'N·m/rad',c:'N·m·s/rad',q:'rad'}};
+const UNT={t:{m:'\\mathrm{kg}',k:'\\mathrm{N/m}',c:'\\mathrm{N\\,s/m}'},r:{m:'\\mathrm{kg\\,m^2}',k:'\\mathrm{N\\,m/rad}',c:'\\mathrm{N\\,m\\,s/rad}'}};
+
+/* Each mechanism: base coordinate q0 and an alternative q1 = s*q0.
+   ratios are d(motion)/d(q0); kind 't' translational, 'r' rotational. */
+const M={
+lever:{names:['\\theta','x=b\\theta'],kinds:['r','t'],
+  get(){const m=val('Lm'),b=val('Lb'),J=val('LJ'),k=val('Lk'),a=val('La'),c=val('Lc'),d=val('Ld');
+    return {s:b,inert:[['lever J_O',J,1,'1'],['mass m',m,b,'b']],stiff:[['spring k',k,a,'a']],damp:[['damper c',c,d,'d']],p:{m,b,J,k,a,c,d}};}},
+roll:{names:['x','\\theta=x/R'],kinds:['t','r'],
+  get(){const m=val('Rm'),R=val('RR'),be=val('Rb'),k=val('Rk'),h=val('Rh');
+    return {s:1/R,inert:[['translation m',m,1,'1'],['rotation I_G',be*m*R*R,1/R,'1/R']],stiff:[['spring k',k,h,'h/R']],damp:[],p:{m,R,be,k,h}};}},
+pulley:{names:['x','\\theta=x/R'],kinds:['t','r'],
+  get(){const m=val('Pm'),J=val('PJ'),R=val('PR'),k=val('Pk');
+    return {s:1/R,inert:[['mass m',m,1,'1'],['pulley J',J,1/R,'1/R']],stiff:[['spring k',k,1,'1']],damp:[],p:{m,J,R,k}};}},
+gear:{names:['\\theta_1','\\theta_2=-(N_1/N_2)\\theta_1'],kinds:['r','r'],
+  get(){const J1=val('GJ1'),J2=val('GJ2'),N1=val('GN1'),N2=val('GN2'),k1=val('Gk1'),k2=val('Gk2'),n=N1/N2;
+    return {s:-n,inert:[['input J₁',J1,1,'1'],['output J₂',J2,-n,'−N₁/N₂']],stiff:[['input shaft k₁',k1,1,'1'],['output shaft k₂',k2,-n,'−N₁/N₂']],damp:[],p:{J1,J2,N1,N2,k1,k2,n}};}},
+};
+// equivalent properties in coordinate ci (0 base, 1 alternative)
+function equiv(D,ci){const f=ci?1/D.s:1;   // d(motion)/dq1 = d(motion)/dq0 / s
+  const im=D.inert.map(e=>e[1]*Math.pow(e[2]*f,2)),ik=D.stiff.map(e=>e[1]*Math.pow(e[2]*f,2)),ic=D.damp.map(e=>e[1]*Math.pow(e[2]*f,2));
+  const meq=im.reduce((a,b)=>a+b,0),keq=ik.reduce((a,b)=>a+b,0),ceq=ic.reduce((a,b)=>a+b,0);
+  return {im,ik,ic,meq,keq,ceq,wn:keq>0&&meq>0?Math.sqrt(keq/meq):0,f};}
+
+/* ---------- state ---------- */
+const pm=new Plot(S('cm'),{pad:[8,8,8,8],equal:true,xmin:-0.4,xmax:1.2,ymin:-0.55,ymax:0.55});
+const pb=new Plot(S('cb'),{pad:[92,14,12,40],xmin:0,xmax:1,ymin:0,ymax:2});
+let u=0.6, ud=0, playing=false, t=0, u0=0.6;   // u: normalized display displacement in [-1,1]
+const WREF={lever:10.811,roll:18.257,pulley:17.321,gear:20};   // default omega_n, for the display time scale
+const AMP={lever:0.32,roll:0.25,pulley:0.25,gear:0.7};          // display amplitude of q0 at u = 1 (rad, or fraction of R)
+
+function showPars(){const mk=S('mech').value;document.querySelectorAll('#pars [data-m]').forEach(d=>d.classList.toggle('hid',d.dataset.m!==mk));
+  const btns=S('crd').parentNode.querySelectorAll('.galb button');const nm=M[mk].names;
+  btns.forEach((b,i)=>{b.innerHTML='\\('+nm[i]+'\\)';});if(window.TUTmath)TUTmath(S('crd').parentNode);}
+
+/* ---------- drawing helpers ---------- */
+function zig(P,x0,y0,x1,y1,n,w,col){const g=P.g,ax=P.X(x0),ay=P.Y(y0),bx=P.X(x1),by=P.Y(y1),L=Math.hypot(bx-ax,by-ay);if(L<2)return;
+  const ux=(bx-ax)/L,uy=(by-ay)/L,nx=-uy,ny=ux,e=Math.min(10,L*0.15);g.save();g.strokeStyle=col||C.ink;g.lineWidth=1.6;g.beginPath();g.moveTo(ax,ay);g.lineTo(ax+ux*e,ay+uy*e);
+  for(let i=0;i<n;i++){const s=e+(L-2*e)*(i+0.5)/n,sg=i%2?-1:1;g.lineTo(ax+ux*s+nx*w*sg,ay+uy*s+ny*w*sg);}g.lineTo(bx-ux*e,by-uy*e);g.lineTo(bx,by);g.stroke();g.restore();}
+function hatch(P,x0,y0,x1,y1,dir){const g=P.g;g.save();g.strokeStyle=C.axis;g.lineWidth=1.2;g.beginPath();g.moveTo(P.X(x0),P.Y(y0));g.lineTo(P.X(x1),P.Y(y1));g.stroke();
+  const n=8;for(let i=0;i<=n;i++){const x=P.X(x0+(x1-x0)*i/n),y=P.Y(y0+(y1-y0)*i/n);g.beginPath();g.moveTo(x,y);g.lineTo(x+dir[0]*7,y+dir[1]*7);g.stroke();}g.restore();}
+function damper(P,x,y0,y1,col){const g=P.g,X=P.X(x),A=P.Y(y0),B=P.Y(y1),m=(A+B)/2;g.save();g.strokeStyle=col||C.ink;g.lineWidth=1.6;
+  g.beginPath();g.moveTo(X,A);g.lineTo(X,m+6);g.moveTo(X-8,m+12);g.lineTo(X-8,m-4);g.lineTo(X+8,m-4);g.lineTo(X+8,m+12);g.moveTo(X-6,m+2);g.lineTo(X+6,m+2);g.moveTo(X,m+2);g.lineTo(X,B);g.stroke();g.restore();}
+function varrow(P,x0,y0,x1,y1,lab){if(!S('arr').checked)return;P.arrow(x0,y0,x1,y1,C.red,2,8);if(lab)P.text(lab,x1,y1,C.red,{dx:6,dy:(y1>=y0?-8:8),size:12,bold:true});}
+function circ(P,cx,cy,r,stroke,fill){const g=P.g;g.save();g.beginPath();g.arc(P.X(cx),P.Y(cy),Math.abs(P.X(cx+r)-P.X(cx)),0,TAU);if(fill){g.fillStyle=fill;g.fill();}g.strokeStyle=stroke||C.ink;g.lineWidth=1.8;g.stroke();g.restore();}
+function spoke(P,cx,cy,r,ang,col){P.line([cx,cx+r*Math.cos(ang)],[cy,cy+r*Math.sin(ang)],col||C.ink,2);}
+
+/* ---------- mechanisms (display only; motion exaggerated) ---------- */
+const DQ=0.5;   // virtual-displacement arrow: delta q0 shown as this fraction of the display amplitude
+function drawLever(D){const p=D.p,th=u*AMP.lever,pt=s=>[s*Math.cos(th),s*Math.sin(th)],L=Math.max(p.b,p.a,p.d)+0.08;
+  pm.set({xmin:-0.25,xmax:1.15,ymin:-0.62,ymax:0.62});pm.begin();
+  hatch(pm,-0.25,-0.55,1.15,-0.55,[-5,7]);
+  const A=pt(p.a),Dd=pt(p.d);zig(pm,p.a,-0.55,A[0],A[1],8,7,C.ink);damper(pm,p.d,-0.55,Dd[1],C.ink);
+  const E=pt(L),B0=pt(-0.12);pm.line([B0[0],E[0]],[B0[1],E[1]],C.copper,6);
+  const g=pm.g,X=pm.X(0),Y=pm.Y(0);g.save();g.strokeStyle=C.ink;g.lineWidth=1.6;g.beginPath();g.moveTo(X,Y);g.lineTo(X-10,Y+18);g.lineTo(X+10,Y+18);g.closePath();g.stroke();g.restore();pm.dot(0,0,C.ink,3);
+  const Bm=pt(p.b),hs=0.06;pm.fill([Bm[0]-hs,Bm[0]+hs,Bm[0]+hs,Bm[0]-hs],[Bm[1],Bm[1],Bm[1]+2*hs,Bm[1]+2*hs],C.blue,0.85);
+  pm.text('m',Bm[0],Bm[1]+hs,'#fff',{align:'center',bold:true});
+  const dth=DQ*AMP.lever;[[p.b,'b δθ'],[p.a,'a δθ'],[p.d,'d δθ']].forEach(([s,l],i)=>{const P0=pt(s);varrow(pm,P0[0]+(i?0.0:0.09),P0[1]+(i===0?2*hs:0),P0[0]+(i?0:0.09),P0[1]+(i===0?2*hs:0)+s*dth*Math.sign(u||1),l);});
+  pm.text('θ = '+th.toFixed(2)+' rad (shown)',-0.22,0.55,C.muted,{size:11});}
+function drawRoll(D){const p=D.p,R=p.R,x=u*AMP.roll*R*4,th=-x/R;   // rolls right -> clockwise
+  pm.set({xmin:-0.75,xmax:0.75,ymin:-0.08,ymax:0.75});pm.begin();
+  hatch(pm,-0.75,0,0.75,0,[-5,7]);hatch(pm,-0.7,0,-0.7,0.7,[-7,-5]);
+  const cx=x,cy=R;circ(pm,cx,cy,R,C.ink,'rgba(0,114,189,0.18)');spoke(pm,cx,cy,R,Math.PI/2+th,C.blue);spoke(pm,cx,cy,R,-Math.PI/2+th,C.blue);
+  // attachment point: body point that sits at height h*R above contact when x = 0
+  const hh=p.h*R-R,ax=cx-hh*Math.sin(th),ay=cy+hh*Math.cos(th);zig(pm,-0.7,p.h*R,ax,ay,9,6,C.ink);pm.dot(ax,ay,C.ink,3.5);pm.dot(cx,cy,C.ink,2.5);
+  const dx=DQ*AMP.roll*R*4*Math.sign(u||1);varrow(pm,cx,cy+R+0.05,cx+dx,cy+R+0.05,'δx');varrow(pm,ax,ay-0.035,ax+dx*p.h,ay-0.035,(p.h).toFixed(2)+' δx');
+  pm.text('x = '+(x*1000).toFixed(0)+' mm (shown)',-0.68,0.72,C.muted,{size:11});}
+function drawPulley(D){const p=D.p,R=Math.max(p.R,0.06)*1.6,x=u*AMP.pulley*0.6,th=-x/R;   // mass down -> pulley turns
+  pm.set({xmin:-0.6,xmax:0.6,ymin:-0.6,ymax:0.62});pm.begin();
+  hatch(pm,-0.3,0.58,0.3,0.58,[-5,-7]);pm.line([0,0],[0.58,0.4],C.ink,2);
+  circ(pm,0,0.4,R,C.ink,'rgba(103,53,92,0.18)');spoke(pm,0,0.4,R,th,C.plum);spoke(pm,0,0.4,R,th+Math.PI,C.plum);pm.dot(0,0.4,C.ink,3);
+  const ym=-0.1-x,ys=0.0+x;pm.line([-R,-R],[0.4,ym],C.ink,1.6);pm.line([R,R],[0.4,ys],C.ink,1.6);
+  const hs=0.07;pm.fill([-R-hs,-R+hs,-R+hs,-R-hs],[ym,ym,ym-2*hs,ym-2*hs],C.blue,0.85);pm.text('m',-R,ym-hs,'#fff',{align:'center',bold:true});
+  zig(pm,R,ys,R,-0.55,9,6,C.ink);hatch(pm,R-0.12,-0.55,R+0.12,-0.55,[-5,7]);
+  const dx=DQ*AMP.pulley*0.6*Math.sign(u||1);varrow(pm,-R-hs-0.05,ym-hs,-R-hs-0.05,ym-hs-dx,'δx');varrow(pm,R+0.05,ys,R+0.05,ys+dx,'δx');
+  pm.text('rope: x = R θ (no slip)',-0.58,0.2,C.muted,{size:11});}
+function drawGear(D){const p=D.p,r1=0.012*p.N1/2*1.2,r2=0.012*p.N2/2*1.2,th1=u*AMP.gear,th2=-p.n*th1,c1=-r2*0.15-r1,c2=c1+r1+r2;
+  pm.set({xmin:c1-r1-0.3,xmax:c2+r2+0.3,ymin:-0.55,ymax:0.6});pm.begin();
+  const teeth=(cx,R,N,ang,col)=>{circ(pm,cx,0,R,C.ink,col);const g=pm.g;g.save();g.strokeStyle=C.ink;g.lineWidth=1.2;
+    for(let i=0;i<N;i++){const a=ang+TAU*i/N;g.beginPath();g.moveTo(pm.X(cx+R*Math.cos(a)),pm.Y(R*Math.sin(a)));g.lineTo(pm.X(cx+(R+0.022)*Math.cos(a)),pm.Y((R+0.022)*Math.sin(a)));g.stroke();}g.restore();
+    spoke(pm,cx,0,R,ang,C.ink);pm.dot(cx,0,C.ink,3);};
+  teeth(c1,r1,p.N1,th1,'rgba(0,114,189,0.2)');teeth(c2,r2,p.N2,th2+Math.PI/p.N2,'rgba(217,83,25,0.2)');
+  // shafts as torsional springs to ground
+  if(p.k1>0){zig(pm,c1-r1-0.25,0,c1,0,6,5,C.ink);hatch(pm,c1-r1-0.25,-0.1,c1-r1-0.25,0.1,[-7,0]);}
+  if(p.k2>0){zig(pm,c2,0,c2+r2+0.25,0,6,5,C.ink);hatch(pm,c2+r2+0.25,-0.1,c2+r2+0.25,0.1,[7,0]);}
+  pm.text('J₁',c1,-r1-0.07,C.blue,{align:'center',bold:true});pm.text('J₂',c2,-r2-0.07,C.orange,{align:'center',bold:true});
+  if(S('arr').checked){const d1=DQ*AMP.gear*Math.sign(u||1),d2=-p.n*d1;pm.arc(c1,0,r1+0.07,Math.PI/2,Math.PI/2+d1,C.red,2.2);pm.arc(c2,0,r2+0.07,Math.PI/2,Math.PI/2+d2,C.red,2.2);
+    pm.text('δθ₁',c1,r1+0.12,C.red,{align:'center',bold:true,size:12});pm.text('δθ₂ = −(N₁/N₂) δθ₁',c2,r2+0.12,C.red,{align:'center',bold:true,size:12});}
+  pm.text('N₁θ₁ + N₂θ₂ = 0',pm.x0+0.03,0.55,C.muted,{size:11});}
+const DRAW={lever:drawLever,roll:drawRoll,pulley:drawPulley,gear:drawGear};
+
+function drawBars(D,E,ci){const kd=M[S('mech').value].kinds[ci],U=UN[kd];
+  pb.begin();const g=pb.g;
+  const rows=[['inertia',E.im,D.inert,E.meq,U.m],['stiffness',E.ik,D.stiff,E.keq,U.k]];
+  if(D.damp.length)rows.push(['damping',E.ic,D.damp,E.ceq,U.c]);
+  pb.set({ymin:0,ymax:rows.length});pb.begin();
+  rows.forEach((r,i)=>{const y=rows.length-i-0.5,tot=r[3]||1;let x=0;
+    pb.text(r[0],0,y,C.ink,{align:'right',dx:-8,bold:true,size:12});
+    r[1].forEach((v,j)=>{const w=v/tot;if(w>0){pb.fill([x,x+w,x+w,x],[y-0.28,y-0.28,y+0.28,y+0.28],COLS[j%COLS.length],0.85);
+      if(w>0.12)pb.text(r[2][j][0],x+w/2,y+0.05,'#fff',{align:'center',size:11,bold:true});
+      if(w>0.12)pb.text((100*w).toFixed(0)+'%',x+w/2,y-0.17,'#fff',{align:'center',size:10});}x+=w;});
+    pb.text('= '+TUT.fmt(r[3])+' '+r[4],1,y+0.4,C.muted,{align:'right',size:11});});
+  pb.axes({xlabel:'share of the equivalent coefficient',grid:false,yticks:[],xticks:[0,0.25,0.5,0.75,1],xfmt:v=>(100*v)+'%'});}
+
+function readouts(D,E,ci){const mk=S('mech').value,kd=M[mk].kinds[ci],U=UNT[kd],E0=equiv(D,0),E1=equiv(D,1),nm=M[mk].names;
+  const zeta=E.ceq>0?E.ceq/(2*Math.sqrt(E.keq*E.meq)):0;
+  const sym=kd==='r'?'J':'m';
+  ro(S('ro1'),[
+    ['Coordinate',TeX('q='+nm[ci])],
+    [TeX(sym+'_\\text{eq}'),E.meq.toPrecision(4)+' '+TeX(U.m)],
+    [TeX('k_\\text{eq}'),E.keq.toPrecision(4)+' '+TeX(U.k)],
+    D.damp.length?[TeX('c_\\text{eq}')+', '+TeX('\\zeta'),E.ceq.toPrecision(4)+' '+TeX(U.c)+', '+zeta.toFixed(4)]:['Damping','none in this mechanism'],
+    [TeX('\\omega_n=\\sqrt{k_\\text{eq}/'+sym+'_\\text{eq}}'),E.wn>0?E.wn.toFixed(3)+' rad/s':'no restoring element'],
+    ['Same, other coordinate',E0.wn>0?(ci?E0:E1).wn.toFixed(3)+' rad/s':'—'],
+    [TeX('T_n=2\\pi/\\omega_n'),E.wn>0?(TAU/E.wn).toFixed(4)+' s':'—'],
+  ]);
+  const rows=[];D.inert.forEach(e=>rows.push([e[0].replace(/_([A-Z0-9])/,'_$1')+' (inertia)',TeX('\\partial(\\cdot)/\\partial q')+' = '+(e[2]*E.f).toPrecision(4)+' &nbsp;(base: '+e[3]+')']));
+  D.stiff.forEach(e=>rows.push([e[0]+' (stiffness)',TeX('\\partial\\delta/\\partial q')+' = '+(e[2]*E.f).toPrecision(4)+' &nbsp;(base: '+e[3]+')']));
+  D.damp.forEach(e=>rows.push([e[0]+' (damping)',TeX('\\partial\\delta/\\partial q')+' = '+(e[2]*E.f).toPrecision(4)+' &nbsp;(base: '+e[3]+')']));
+  rows.push(['Scale to the other coordinate',TeX('s=')+D.s.toPrecision(4)+' (coefficients divide by '+TeX('s^2')+')']);
+  ro(S('ro2'),rows);}
+
+/* ---------- wiring ---------- */
+function current(){const mk=S('mech').value,ci=+S('crd').value,D=M[mk].get(),E=equiv(D,ci);return {mk,ci,D,E};}
+function drawMech(){const s=current();DRAW[s.mk](s.D);}
+function draw(){const s=current();DRAW[s.mk](s.D);drawBars(s.D,s.E,s.ci);readouts(s.D,s.E,s.ci);}
+const ALL=['Lm','Lb','LJ','Lk','La','Lc','Ld','Rm','RR','Rb','Rk','Rh','Pm','PJ','PR','Pk','GJ1','GJ2','GN1','GN2','Gk1','Gk2'];
+bind(ALL,draw);
+S('mech').addEventListener('change',()=>{showPars();u=0.6;playing=false;draw();});
+['crd','arr'].forEach(id=>S(id).addEventListener('change',draw));
+TUT.drag(S('cm'),pm,(x,y)=>{playing=false;const mk=S('mech').value;let v;
+  if(mk==='roll'){v=x/(AMP.roll*4*val('RR'));}
+  else if(mk==='pulley'){v=-(y-0.1)/0.45;}
+  else if(mk==='gear'){v=Math.max(-1,Math.min(1,y/0.4));}
+  else{const th=Math.atan2(y,Math.max(x,0.05));v=th/AMP.lever;}
+  u=Math.max(-1,Math.min(1,v));drawMech();});
+S('play').onclick=()=>{u0=Math.abs(u)>0.05?u:0.6;t=0;playing=true;if(ctl.paused){ctl.paused=false;}};
+S('hold').onclick=()=>{playing=false;};
+const ctl=animate(dt=>{if(!playing)return;const s=current();if(!(s.E.wn>0)){return;}
+  const w=s.E.wn/WREF[s.mk]*TAU*0.7,z=s.E.ceq>0?s.E.ceq/(2*Math.sqrt(s.E.keq*s.E.meq)):0;t+=dt;
+  if(z<1){const wd=w*Math.sqrt(1-z*z);u=u0*Math.exp(-z*w*t)*(Math.cos(wd*t)+z/Math.sqrt(1-z*z)*Math.sin(wd*t));}else u=u0*Math.exp(-w*t)*(1+w*t);
+  if(Math.abs(u)<0.02*Math.abs(u0)&&z>0&&t>2){t=0;}
+  drawMech();});
+window.addEventListener('resize',draw);
+showPars();draw();
+})();
+</script>
+</body>
+</html>

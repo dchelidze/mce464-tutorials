@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tutorial 8: The System as a Harmonic Filter (version 1)</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <nav class="tn"><a href="index.html">All tutorials</a><a href="T07_convolution_L16-17.html">&larr; Tutorial 7</a><a href="T09_eigenproblem_modes_L20-21.html">Next: Tutorial 9 &rarr;</a></nav>
+  <div class="kicker">MCE 464 &middot; Tutorial 8 &middot; Lecture 18 &middot; version 1</div>
+  <h1>The System as a Harmonic Filter</h1>
+  <p class="lede">A periodic load is a comb of harmonics. The frequency response is a curve the comb is laid over: each harmonic is scaled by the curve's height at its own frequency. A harmonic that lands on the resonance peak can dominate the response even when its load amplitude is tiny.</p>
+</div></header>
+<div class="wrap">
+
+<h2>1. Load, comb and filter</h2>
+<p>A periodic load of period \(T_0=2\pi/\omega_0\) has the Fourier series
+$$ f(t)=c_0+\sum_{n=1}^{\infty} b_n\sin n\omega_0t. $$
+By linearity each term produces its own steady-state response. With \(\rho_n=n\omega_0/\omega_n\) and unit stiffness,
+$$ x_{ss}(t)=c_0+\sum_{n=1}^{\infty} b_n\,|H(\rho_n)|\,\sin(n\omega_0t-\phi_n),\qquad |H(\rho)|=\frac{1}{\sqrt{(1-\rho^2)^2+(2\zeta\rho)^2}}. $$
+Geometrically (middle figure): stems at \(\omega=n\omega_0\) are the load spectrum, the grey curve is \(|H(\omega)|\), and the output stems are the products. Change \(\omega_0\) and the comb slides along the axis while the curve stays put.</p>
+<ul>
+  <li><b>Low-pass behaviour.</b> Above resonance \(|H|\sim1/\rho^2\), so harmonics are cut quickly; the response is smoother than the load.</li>
+  <li><b>Mean load.</b> The \(n=0\) term sees \(H(0)=1\): the mean load \(c_0\) gives a static deflection \(c_0/k\).</li>
+  <li><b>Resonant harmonic.</b> If \(n\omega_0\approx\omega_n\), harmonic \(n\) is multiplied by up to \(1/(2\zeta)\). For a square wave with \(\omega_0\approx\omega_n/3\) the third harmonic, only one third of the fundamental in load, can dominate the motion.</li>
+</ul>
+
+<div class="ctl">
+  <div><label>Waveform
+    <select id="wf" class="gal"><option value="sq">Square wave (odd harmonics, \(1/n\))</option><option value="tr">Triangular wave (odd, \(1/n^2\))</option><option value="sw">Sawtooth (all harmonics, \(1/n\))</option></select></label></div>
+  <div><label>Fundamental ratio \(\omega_0/\omega_n\)<output id="r0_o"></output><input type="range" id="r0" min="0.05" max="1.6" step="0.005" value="0.32" data-dp="3"></label></div>
+  <div><label>Damping ratio \(\zeta\)<output id="z_o"></output><input type="range" id="z" min="0.01" max="0.4" step="0.005" value="0.04" data-dp="3"></label></div>
+  <div><label>Harmonics kept \(N\)<output id="N_o"></output><input type="range" id="N" min="1" max="99" step="1" value="21" data-dp="0"></label></div>
+  <div><label>Mean load \(c_0\)<output id="c0_o"></output><input type="range" id="c0" min="0" max="1" step="0.01" value="0"></label></div>
+  <div><label>Tune harmonic \(n\) to resonance<select id="tn" class="gal"><option>1</option><option selected>3</option><option>5</option><option>7</option></select></label><button id="tune">Set \(\omega_0=\omega_n/n\)</button></div>
+</div>
+
+<div class="figs">
+  <div class="fig"><div class="ttl">Load in time (two periods)</div><canvas id="c1" data-ar="0.62"></canvas>
+    <div class="cap">Grey: exact waveform. Blue: sum of the first \(N\) harmonics. Notice the overshoot at jumps (Gibbs) for the square wave; it does not shrink as \(N\) grows, it only narrows.</div></div>
+  <div class="fig"><div class="ttl">Spectrum laid over the frequency response</div><canvas id="c2" data-ar="0.62"></canvas>
+    <div class="cap"><span class="sw" style="background:#0072BD"></span>load harmonics \(b_n\) &nbsp; <span class="sw" style="background:#b9b5a8"></span>\(|H(\omega)|\) &nbsp; <span class="sw" style="background:#D95319"></span>response harmonics \(b_n|H|\). Log&ndash;log axes.</div></div>
+  <div class="fig"><div class="ttl">Steady-state response (two periods)</div><canvas id="c3" data-ar="0.62"></canvas>
+    <div class="cap">Orange: sum of filtered harmonics. Dashed blue: the load itself, i.e. the quasi-static response. The gap between them is the dynamics.</div></div>
+  <div class="fig"><div class="ttl">Read-out</div><table class="ro" id="ro"></table></div>
+</div>
+
+<div class="note"><b class="h">Experiments</b>
+(1) Square wave, \(\zeta=0.04\): drag \(\omega_0/\omega_n\) from 0.05 upward. Each time an odd multiple of \(\omega_0\) crosses 1, a single orange stem shoots up. (2) Press the tune button with \(n=3\): the response looks almost sinusoidal at three times the load frequency. (3) Triangular wave: the load harmonics fall as \(1/n^2\), so the response is dominated by the fundamental or by a resonant harmonic; the Gibbs effect is absent. (4) Reduce \(N\) to 3: the response barely changes because the filter has already removed the high harmonics, even though the load is badly represented.</div>
+
+<h2>2. Check yourself</h2>
+<details><summary>Why is the response smoother than the load when the load harmonics lie above resonance?</summary>
+<p>Above resonance \(|H|\sim1/\rho^2\), so the harmonic at \(n\omega_0\) is cut by \(1/(n\omega_0/\omega_n)^2\). The jumps in the load are carried by the high harmonics, and these are removed first.</p></details>
+<details><summary>How many harmonics do you need for the response?</summary>
+<p>Only those up to a few times \(\omega_n\), plus any whose frequency falls near the resonance. The filter's roll-off, not the load's convergence, controls the truncation error. A slowly converging load (\(1/n\)) may need many harmonics for the <em>load</em> but few for the <em>response</em>.</p></details>
+<details><summary>Why does a sawtooth excite even harmonics but a square wave does not?</summary>
+<p>A square wave is odd about a quarter period (half-wave symmetric), \(f(t+T_0/2)=-f(t)\), which kills even harmonics. The sawtooth lacks that symmetry.</p></details>
+
+<footer>Slides: Lecture 18 (Fourier representation, complex coefficients, mean load, harmonic filtering, resonant harmonic, spectrum to response, square and triangular waves, truncation). Labels in the plots are plain text; equations are typeset with KaTeX.</footer>
+</div>
+
+<script src="assets/katex/katex.min.js"></script>
+<script src="assets/katex/auto-render.min.js"></script>
+<script src="assets/math.js"></script>
+<script src="assets/phonebar.js"></script>
+<script src="assets/layout.js"></script>
+<script src="assets/lib.js"></script>
+<script>
+(function(){
+const {ro,TeX,C,Plot,bind,val,setVal,TAU}=TUT;
+const S=id=>document.getElementById(id);
+const p1=new Plot(S('c1'),{pad:[48,12,12,36],xmin:0,xmax:2,ymin:-1.5,ymax:1.5});
+const p2=new Plot(S('c2'),{pad:[52,12,12,36],xlog:true,ylog:true,xmin:0.03,xmax:3,ymin:1e-4,ymax:1e2});
+const p3=new Plot(S('c3'),{pad:[48,12,12,36],xmin:0,xmax:2,ymin:-1,ymax:1});
+const bn=(w,n)=>{if(w==='sq')return n%2?4/(n*Math.PI):0;if(w==='tr')return n%2?8*(((n-1)/2)%2?-1:1)/(Math.PI*Math.PI*n*n):0;return 2*(n%2?1:-1)/(n*Math.PI);};
+const exact=(w,u)=>{const a=((u+Math.PI)%TAU+TAU)%TAU-Math.PI;if(w==='sq')return Math.sin(u)>=0?1:-1;if(w==='tr')return 2/Math.PI*Math.asin(Math.sin(u));return a/Math.PI;};
+const H=(rho,z)=>1/Math.hypot(1-rho*rho,2*z*rho),PH=(rho,z)=>Math.atan2(2*z*rho,1-rho*rho);
+function draw(){
+  const w=S('wf').value,r0=val('r0'),z=val('z'),N=Math.round(val('N')),c0=val('c0');
+  const M=720,ts=[],inEx=[],inN=[],out=[];
+  for(let i=0;i<=M;i++){const t=2*i/M,u=TAU*t;ts.push(t);inEx.push(exact(w,u)+c0);
+    let a=c0,b=c0;for(let n=1;n<=N;n++){const B=bn(w,n);if(!B)continue;a+=B*Math.sin(n*u);const rho=n*r0;b+=B*H(rho,z)*Math.sin(n*u-PH(rho,z));}
+    inN.push(a);out.push(b);}
+  p1.set({ymin:-1.5,ymax:1.5+c0});p1.begin();p1.axes({zero:true,xlabel:'t / T₀',ylabel:'load f'});p1.line(ts,inEx,'#b9b5a8',2);p1.line(ts,inN,C.blue,2.4);
+  let ym=0.2;out.forEach(v=>ym=Math.max(ym,Math.abs(v)));inEx.forEach(v=>ym=Math.max(ym,Math.abs(v)));
+  p3.set({ymin:-ym*1.15,ymax:ym*1.15});p3.begin();p3.axes({zero:true,xlabel:'t / T₀',ylabel:'response x (k = 1)'});p3.line(ts,inEx,C.blue,1.4,[6,4]);p3.line(ts,out,C.orange,2.6);
+  // spectrum
+  const xmax=Math.max(3,Math.min(N,60)*r0*1.3);p2.set({xmax});p2.begin();p2.axes({xlabel:'ω / ωn',ylabel:'amplitude'});
+  const ws=[];for(let i=0;i<=400;i++)ws.push(0.03*Math.pow(xmax/0.03,i/400));p2.line(ws,ws.map(q=>H(q,z)),'#b9b5a8',3);p2.line([1,1],[1e-4,1e2],C.axis,1,[3,4]);
+  const g=p2.g;let best={n:0,v:0},sum2=0,sumIn2=0,tot=0;
+  for(let n=1;n<=N;n++){const B=Math.abs(bn(w,n));if(!B)continue;const rho=n*r0,hv=H(rho,z),ov=B*hv;sum2+=ov*ov;sumIn2+=B*B;if(ov>best.v)best={n,v:ov,B,hv};
+    [[B,C.blue,-2],[ov,C.orange,2]].forEach(([v,col,dx])=>{const X=p2.X(rho)+dx;if(X<p2.l||X>p2.l+p2.pw)return;g.save();g.strokeStyle=col;g.lineWidth=2;g.beginPath();g.moveTo(X,p2.Y(1e-4));g.lineTo(X,p2.Y(Math.max(v,1e-4)));g.stroke();g.fillStyle=col;g.beginPath();g.arc(X,p2.Y(Math.max(v,1e-4)),3,0,TAU);g.fill();g.restore();});}
+  const rms=a=>Math.sqrt(a.reduce((s,v)=>s+(v-c0)*(v-c0),0)/a.length);
+  const rows=[['Fundamental \\(\\omega_0/\\omega_n\\)',r0.toFixed(3)],['Closest harmonic to resonance',(()=>{let bn_=1,d=1e9;for(let n=1;n<=N;n++){if(!bn(w,n))continue;const dd=Math.abs(n*r0-1);if(dd<d){d=dd;bn_=n;}}return TeX('n='+bn_)+'  ('+TeX('n\\omega_0/\\omega_n='+(bn_*r0).toFixed(3))+')';})()],
+    ['Dominant response harmonic',best.n?TeX('n='+best.n)+'  amplitude '+best.v.toExponential(2)+'  (load '+best.B.toExponential(2)+', gain '+best.hv.toFixed(2)+')':'—'],
+    ['Share of dynamic response power in it',best.n?(100*best.v*best.v/Math.max(sum2,1e-30)).toFixed(1)+' %':'—'],
+    ['RMS of dynamic load / response',rms(inN).toFixed(3)+' / '+rms(out).toFixed(3)],['Peak gain \\(1/(2\\zeta)\\)',(1/(2*z)).toFixed(2)],['Static response to mean load',c0.toFixed(2)+'  ('+TeX('H(0)=1')+')'],
+    ['Truncation error of load (RMS, vs exact)',Math.sqrt(inN.reduce((s,v,i)=>s+(v-inEx[i])**2,0)/inN.length).toFixed(3)]];
+  ro(S('ro'),rows);
+}
+bind(['r0','z','N','c0'],draw);S('wf').addEventListener('change',draw);
+S('tune').onclick=()=>{setVal('r0',1/(+S('tn').value));draw();};
+window.addEventListener('resize',draw);draw();
+})();
+</script>
+</body>
+</html>

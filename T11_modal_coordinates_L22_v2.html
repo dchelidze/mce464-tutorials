@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tutorial 11: Modal Coordinates</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+/* controls that act on one figure sit with that figure, not in the sidebar */
+.figbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:12px 0 2px;padding:8px 12px;background:var(--card);border:1px solid var(--rule);border-radius:10px}
+.figbar button{margin:0}
+.figbar label{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:14px;font-weight:600}
+.figbar label.chk{font-weight:500}
+.figbar .sep{width:1px;align-self:stretch;background:var(--rule);margin:0 4px}
+</style>
+<style>/* phone width (sidebar stacked): a wide display equation scrolls inside its own box instead of widening the page; the padding keeps tall delimiters unclipped */@media (max-width:980px){.katex-display{overflow-x:auto;overflow-y:hidden;padding:.45em 0}}</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <nav class="tn"><a href="index.html">All tutorials</a><a href="T10_energy_surfaces_mass_weighted_L21-22.html">&larr; Tutorial 10</a><a href="T12_dynamic_absorber_L23.html">Next: Tutorial 12 &rarr;</a></nav>
+  <div class="kicker">MCE 464 &middot; Tutorial 11 &middot; Lecture 22</div>
+  <h1>Modal Coordinates: Rotating Into Decoupled Axes</h1>
+  <p class="lede">The modal transformation is a change of axes. In the new axes the inertia ellipse becomes a circle and the stiffness ellipse lines up with the axes, so the equations decouple into independent oscillators. Three further views follow: where a force goes (modal forces), how the modal terms add in the complex plane, and the free response from arbitrary initial conditions.</p>
+</div></header>
+<div class="wrap">
+
+<h2>1. One point, two coordinate systems</h2>
+<p>Collect the mass-normalized mode shapes in \(\vb{\Phi}=[\vb{\phi}_1\ \vb{\phi}_2]\) and write \(\vb{q}=\vb{\Phi}\vb{\eta}\). Then
+$$ \vb{\Phi}^{\T}\vb{M}\vb{\Phi}=\vb{I},\qquad \vb{\Phi}^{\T}\vb{K}\vb{\Phi}=\operatorname{diag}(\omega_1^2,\omega_2^2). $$
+Geometrically, \(\vb{q}={\eta}_1\vb{\phi}_1+{\eta}_2\vb{\phi}_2\) expands the same point along the two mode directions (the <b>parallelogram rule</b>, in blue and orange below). Because the axes are skew, the components are <em>not</em> the ordinary perpendicular projections. They are the \(\vb{M}\)-weighted ones:
+$$ {\eta}_r=\vb{\phi}_r^{\T}\vb{M}\,\vb{q}. $$
+In the \(\vb{\eta}\)-plane the inertia ellipse \(\vb{q}^{\T}\vb{M}\vb{q}={\eta}_1^2+{\eta}_2^2=1\) is a unit circle, and the stiffness ellipse \(\vb{q}^{\T}\vb{K}\vb{q}=\omega_1^2{\eta}_1^2+\omega_2^2{\eta}_2^2=1\) has its axes on the coordinate axes with semi-axes \(1/\omega_r\).</p>
+
+<div class="ctl" data-title="System">
+  <div><label>\(m_1\)<output id="m1_o"></output><input type="range" id="m1" min="0.5" max="3" step="0.05" value="1"></label></div>
+  <div><label>\(m_2\)<output id="m2_o"></output><input type="range" id="m2" min="0.5" max="3" step="0.05" value="2"></label></div>
+  <div><label>\(k_1\)<output id="k1_o"></output><input type="range" id="k1" min="0.2" max="3" step="0.05" value="1"></label></div>
+  <div><label>\(k_2\) (coupling)<output id="k2_o"></output><input type="range" id="k2" min="0" max="3" step="0.05" value="0.8"></label></div>
+  <div><label>\(k_3\)<output id="k3_o"></output><input type="range" id="k3" min="0.2" max="3" step="0.05" value="1.5"></label></div>
+</div>
+
+<div class="figbar"><label class="chk"><input type="checkbox" id="eu"> compare with the ordinary perpendicular projection</label></div>
+<div class="figs">
+  <div class="fig"><div class="ttl">Physical plane \((q_1,q_2)\): drag the point</div>
+    <canvas id="ca" data-ar="0.9"></canvas>
+    <div class="cap">Ink: \(\vb{q}^{\T}\vb{M}\vb{q}=1\). Plum, dashed: \(\vb{q}^{\T}\vb{K}\vb{q}=1\). Blue and orange: components \({\eta}_1\vb{\phi}_1\), \({\eta}_2\vb{\phi}_2\) completing the parallelogram. The hollow marker is the perpendicular projection, which is <em>not</em> the modal component.</div></div>
+  <div class="fig"><div class="ttl">Modal plane \(({\eta}_1,{\eta}_2)\): drag here too</div>
+    <canvas id="cb" data-ar="0.9"></canvas>
+    <div class="cap">Same point, new axes. Circle: \({\eta}_1^2+{\eta}_2^2=1\). Ellipse: \(\omega_1^2{\eta}_1^2+\omega_2^2{\eta}_2^2=1\), axis-aligned. The coordinates are now ordinary perpendicular projections.</div></div>
+</div>
+<div class="figs">
+  <div class="fig"><div class="ttl">Numbers for this point</div><table class="ro" id="ro"></table></div>
+  <div class="fig"><div class="ttl">What decoupling buys you</div>
+    <p style="margin-top:2px">In modal coordinates \(\vb{M}\ddot{\vb{q}}+\vb{K}\vb{q}=\vb{f}\) becomes two independent scalar equations
+    $$ \ddot {\eta}_r+\omega_r^2{\eta}_r=\vb{\phi}_r^{\T}\vb{f}\quad(r=1,2). $$
+    Energy splits cleanly: \(\tfrac12\vb{q}^{\T}\vb{K}\vb{q}=\tfrac12\sum_r\omega_r^2{\eta}_r^2\), with no cross terms. Each mode can be solved with the single-DOF tools of Lectures 5&ndash;19 and the answers added back through \(\vb{q}=\vb{\Phi}\vb{\eta}\).</p></div>
+</div>
+
+<h2>2. Damping and forced response by modes</h2>
+<p>Take Rayleigh damping, \(\vb{C}=\alpha\vb{M}+\beta\vb{K}\). Then \(\vb{\Phi}^{\T}\vb{C}\vb{\Phi}=\alpha\vb{I}+\beta\operatorname{diag}(\omega_r^2)\) is diagonal, and each mode has
+$$ \zeta_r=\frac{\alpha+\beta\omega_r^2}{2\omega_r}. $$
+The receptance of mass \(i\) to a force on mass \(j\) is a sum of one-DOF terms,
+$$ H_{ij}(\Omega)=\sum_{r}\frac{\phi_{ir}\,\phi_{jr}}{\omega_r^2-\Omega^2+2i\zeta_r\omega_r\Omega}. $$
+Switch a mode off to see what truncation costs. A dropped mode leaves a static (stiffness-like) remainder \(\phi_{ir}\phi_{jr}/\omega_r^2\) at low frequency: the "static correction". Add a damper \(c_g\) from mass 2 to ground to break proportionality and see where the diagonal modal model starts to fail (Lecture 22, nonproportional damping).</p>
+
+<div class="ctl" data-title="Damping and forcing">
+  <div><label>\(\alpha\) (mass-proportional)<output id="al_o"></output><input type="range" id="al" min="0" max="0.2" step="0.005" value="0.02" data-dp="3"></label></div>
+  <div><label>\(\beta\) (stiffness-proportional)<output id="be_o"></output><input type="range" id="be" min="0" max="0.1" step="0.002" value="0.01" data-dp="3"></label></div>
+  <div><label>\(c_g\) (extra damper on mass 2)<output id="cg_o"></output><input type="range" id="cg" min="0" max="0.6" step="0.01" value="0"></label></div>
+  <div style="display:flex;gap:18px"><label>Force on mass<select id="fj" class="gal"><option value="0">1</option><option value="1">2</option></select></label>
+       <label>Response of mass<select id="fi" class="gal"><option value="0">1</option><option value="1">2</option></select></label></div>
+  <div><label>Driving frequency \(\Omega/\omega_2\)<output id="Om_o"></output><input type="range" id="Om" min="0.02" max="1.4" step="0.002" value="0.5" data-dp="3"></label>
+       <button id="o1">\(\Omega=\omega_1\)</button><button id="o2">\(\Omega=\omega_2\)</button></div>
+</div>
+
+<div class="figbar"><label class="chk"><input type="checkbox" id="k1c" checked> keep mode 1</label><label class="chk"><input type="checkbox" id="k2c" checked> keep mode 2</label><span class="sep"></span><label class="chk"><input type="checkbox" id="sc"> static correction for dropped modes</label></div>
+<div class="figs" style="grid-template-columns:1fr">
+  <div class="fig"><div class="ttl">Receptance magnitude \(|H_{ij}(\Omega)|\)</div>
+    <canvas id="cf" data-ar="0.42"></canvas>
+    <div class="cap"><span class="sw" style="background:#1b2a3a"></span>modal sum (diagonal damping) &nbsp; <span class="sw" style="background:#0072BD"></span>mode 1 alone &nbsp; <span class="sw" style="background:#D95319"></span>mode 2 alone &nbsp; <span class="sw" style="background:#A2142F"></span>retained modes (dashed) &nbsp; <span class="sw" style="background:#055432"></span>exact \((\vb{K}-\Omega^2\vb{M}+i\Omega\vb{C})^{-1}\) (visible when \(c_g>0\))</div></div>
+</div>
+<div class="figs">
+  <div class="fig"><div class="ttl">Modal bookkeeping at this \(\Omega\)</div><table class="ro" id="mb"></table></div>
+  <div class="fig"><div class="ttl">What to notice</div>
+    <ol style="margin:4px 0 0 18px;padding:0">
+      <li>Near \(\omega_1\) the blue single-mode curve is the whole answer; near \(\omega_2\) the orange one is. Between the two resonances the denominators \(\omega_1^2-\Omega^2<0\) and \(\omega_2^2-\Omega^2>0\) have opposite signs, so the two modal terms cancel at one frequency <em>only if the residues \(\phi_{i1}\phi_{j1}\) and \(\phi_{i2}\phi_{j2}\) have the same sign</em>. That is always true for a driving-point receptance \(H_{ii}\), where each residue is a square \(\phi_{ir}^2>0\), so \(H_{ii}\) has an antiresonance between the modes (a minimum when damping is present). For a cross receptance the residues can have opposite signs; then the two terms have the same sign between the modes and there is no zero. At the default values \(H_{11}\) has an antiresonance (at \(\Omega=\sqrt{(k_2+k_3)/m_2}\approx1.072\), i.e. \(\Omega/\omega_2\approx0.735\)) and \(H_{21}\) does not. Section 4 shows this with arrows.</li>
+      <li>Drop mode 2 and the retained curve is wrong above \(\omega_1\). It is also off at \(\Omega\to0\) by the dropped static term \(\phi_{i2}\phi_{j2}/\omega_2^2\), whose sign depends on \(i\) and \(j\). For the driving point \(H_{ii}\) that term is positive, so the truncated curve is too low. For a cross term it can be negative: at the defaults the dropped term of \(H_{21}\) is negative, so the mode-1-only curve is too <em>high</em> at low frequency. The static correction adds the term back.</li>
+      <li>Raise \(c_g\): the exact curve leaves the modal sum. The cross term \((\vb{\Phi}^{\T}\vb{C}\vb{\Phi})_{12}=c_g\,\phi_{21}\phi_{22}\) couples the modes, as the bookkeeping table below the plot shows.</li>
+    </ol></div>
+</div>
+
+<h2>3. Where the force goes</h2>
+<p>With the modal transformation, the force enters each modal equation through a <b>generalized force</b>
+$$ \ddot {\eta}_r+2\zeta_r\omega_r\dot {\eta}_r+\omega_r^2{\eta}_r=p_r,\qquad p_r=\vb{\phi}_r^{\T}\vb{f}. $$
+This is the spatial projection of the load on the mode shape. It is a plain dot product with no \(\vb{M}\), unlike \({\eta}_r=\vb{\phi}_r^{\T}\vb{M}\vb{q}\) for displacements: \(\vb{M}\) converts displacements to momentum-like quantities, while \(\vb{f}\) already is the thing that \(\vb{\phi}_r\) is paired with in the virtual work \(\vb{\phi}_r^{\T}\vb{f}\). A load at a modal node (\(\phi_{jr}=0\) at the loaded mass) does not excite that mode. More generally, any \(\vb{f}\) perpendicular to \(\vb{\phi}_r\) has \(p_r=0\) and leaves mode \(r\) at rest. Drag the force below, or use the buttons to silence a mode.</p>
+<div class="figbar"><button id="sil1">Silence mode 1 (\(p_1=0\))</button><button id="sil2">Silence mode 2 (\(p_2=0\))</button><span class="sep"></span><button id="fon1">Force on mass 1</button><button id="fon2">Force on mass 2</button></div>
+<div class="figs">
+  <div class="fig"><div class="ttl">Force plane \((f_1,f_2)\): drag the force</div><canvas id="cw" data-ar="0.9"></canvas>
+    <div class="cap">Solid blue and orange lines: the mode-shape directions \(\vb{\phi}_1,\vb{\phi}_2\) drawn in the force plane. Dashed lines: the set of forces with \(p_r=0\), perpendicular to \(\vb{\phi}_r\) (silence line of mode \(r\)). Red arrow: \(\vb{f}\). Rings: its perpendicular feet on the mode lines, at signed distance \(p_r/|\vb{\phi}_r|\) from the origin.</div></div>
+  <div class="fig"><div class="ttl">Modal response amplitudes \(|{\eta}_r(\Omega)|\) to this force</div><canvas id="cq" data-ar="0.9"></canvas>
+    <div class="cap"><span class="sw" style="background:#0072BD"></span>\(|{\eta}_1|=|p_1|/|\omega_1^2-\Omega^2+2i\zeta_1\omega_1\Omega|\) &nbsp; <span class="sw" style="background:#D95319"></span>\(|{\eta}_2|\). Diagonal modal damping from the controls above (the extra damper \(c_g\) is ignored here). When \(p_r=0\) the curve is flat at zero and the resonance of mode \(r\) disappears from the response. Dot: the current \(\Omega\).</div></div>
+</div>
+<div class="figs"><div class="fig"><div class="ttl">Modal forces and the response at this \(\Omega\)</div><table class="ro" id="fq"></table></div>
+  <div class="fig"><div class="ttl">What to notice</div>
+    <ol style="margin:4px 0 0 18px;padding:0">
+      <li>Press <em>Silence mode 1</em>. The blue curve drops to zero and only the second resonance remains in the physical response.</li>
+      <li>A force on a single mass (\(\vb{f}\) along an axis) silences a mode only if that mass is a node of the mode. For these shapes neither component of \(\vb{\phi}_r\) is zero, so a single-mass force always excites both modes. The silencing force has both components, with the ratio \(f_2/f_1=-\phi_{1r}/\phi_{2r}\).</li>
+      <li>The silence line of mode 1 is the direction of \(\vb{\phi}_1\) turned by 90&deg; <em>in the force plane</em>. That is different from the \(\vb{M}\)-orthogonal complement of \(\vb{\phi}_1\) in the displacement plane, which is the direction of \(\vb{\phi}_2\).</li>
+    </ol></div></div>
+
+<h2>4. Adding the modal contributions in the complex plane</h2>
+<p>At a driving frequency \(\Omega\) the receptance is a sum of two complex numbers, one per mode,
+$$ H_{ij}(\Omega)=\underbrace{\frac{\phi_{i1}\phi_{j1}}{\omega_1^2-\Omega^2+2i\zeta_1\omega_1\Omega}}_{\text{mode 1}}+\underbrace{\frac{\phi_{i2}\phi_{j2}}{\omega_2^2-\Omega^2+2i\zeta_2\omega_2\Omega}}_{\text{mode 2}}. $$
+Draw them as arrows placed tip to tail; the arrow from the origin to the end is \(H_{ij}\). Move the \(\Omega\) slider (it also drives the plots above), or press <em>Sweep</em>. A term with a positive residue points to the right below its resonance, straight down at its own resonance, and to the left above it. With damping the turn is smooth; with none it is a flip. Between the resonances the mode-1 arrow has turned left and the mode-2 arrow has not, so if both residues are positive they point in opposite directions and can cancel. Use the force and response selectors under <em>Damping and forcing</em> in the left panel to choose \(i\) and \(j\).</p>
+<div class="figbar"><button id="sw">Sweep \(\Omega\)</button><button id="oa">\(\Omega\) at the antiresonance</button></div>
+<div class="figs">
+  <div class="fig"><div class="ttl">Modal terms of \(H_{ij}\) at the current \(\Omega\)</div><canvas id="cph" data-ar="0.9"></canvas>
+    <div class="cap"><span class="sw" style="background:#0072BD"></span>mode 1 &nbsp; <span class="sw" style="background:#D95319"></span>mode 2 (starts at the tip of mode 1) &nbsp; <span class="sw" style="background:#1b2a3a"></span>sum \(=H_{ij}\). The scale follows the largest arrow, so lengths are comparable within a frame, not between frames.</div></div>
+  <div class="fig"><div class="ttl">Residues and zeros</div><table class="ro" id="pt"></table></div>
+</div>
+
+<h2>5. Free response: two independent oscillators</h2>
+<p>For mass-normalized modes, initial conditions in physical coordinates transform through \(\vb{\Phi}^{\T}\vb{M}\):
+$$ \vb{\eta}(0)=\vb{\Phi}^{\T}\vb{M}\,\vb{q}(0),\qquad \dot{\vb{\eta}}(0)=\vb{\Phi}^{\T}\vb{M}\,\dot{\vb{q}}(0). $$
+Each modal coordinate then solves its own single-DOF problem, \({\eta}_r(t)={\eta}_r(0)\cos\omega_rt+\dot {\eta}_r(0)\sin(\omega_rt)/\omega_r\) when undamped, and the physical motion is \(\vb{q}(t)=\vb{\Phi}\vb{\eta}(t)\). Pick an initial condition below or drag the point in the plane. Starting along a mode shape makes one \({\eta}_r\) identically zero and the masses move in lockstep; plucking one mass starts both modes.</p>
+<div class="figbar"><label>Initial condition is a<select id="ict" class="gal"><option value="d">displacement \(\vb{q}(0)\)</option><option value="v">velocity \(\dot{\vb{q}}(0)\)</option></select></label><span class="sep"></span><button id="pl1">Pluck mass 1</button><button id="pl2">Pluck mass 2</button><button id="ms1">Mode 1 shape</button><button id="ms2">Mode 2 shape</button><span class="sep"></span><label class="chk"><input type="checkbox" id="dmp"> include the modal damping (sidebar)</label></div>
+<div class="figs">
+  <div class="fig"><div class="ttl">Initial condition in the physical plane: drag</div><canvas id="cm" data-ar="0.9"></canvas>
+    <div class="cap">Dashed lines: the mode shapes. The point is \(\vb{q}(0)\) (displacement case) or \(\dot{\vb{q}}(0)\) (velocity case, released from the origin).</div></div>
+  <div class="fig"><div class="ttl">Physical motion \(q_1(t)\), \(q_2(t)\)</div><canvas id="cx" data-ar="0.45"></canvas>
+    <div class="ttl" style="margin-top:8px">Modal motion \({\eta}_1(t)\), \({\eta}_2(t)\)</div><canvas id="cqt" data-ar="0.45"></canvas>
+    <div class="cap"><span class="sw" style="background:#1b2a3a"></span>\(q_1\) &nbsp; <span class="sw" style="background:#67355C"></span>\(q_2\) &nbsp; <span class="sw" style="background:#0072BD"></span>\({\eta}_1\) &nbsp; <span class="sw" style="background:#D95319"></span>\({\eta}_2\). Each \({\eta}_r\) is a clean sinusoid at its own frequency; \(q_1\) and \(q_2\) are weighted mixtures of the two, which is why they beat.</div></div>
+</div>
+<div class="figs"><div class="fig"><div class="ttl">Initial conditions in modal coordinates</div><table class="ro" id="fr"></table></div></div>
+
+<h2>6. Check yourself</h2>
+<details><summary>Why are the modal components not the perpendicular projections of \(\vb{q}\) on the mode lines?</summary>
+<p>The modes are orthogonal with respect to \(\vb{M}\), not with respect to the identity. The correct projection weights the dot product by \(\vb{M}\): \({\eta}_r=\vb{\phi}_r^{\T}\vb{M}\vb{q}\). The two constructions agree only when \(\vb{M}\propto\vb{I}\) (which also makes the modes perpendicular).</p></details>
+<details><summary>When \(\Omega\to0\), how do the modal contributions add up to the static deflection?</summary>
+<p>Each mode contributes \(\phi_{ir}\phi_{jr}/\omega_r^2\), and the sum is \((\vb{K}^{-1})_{ij}\). Low modes with small \(\omega_r\) dominate, but the high modes still contribute a smooth static piece.</p></details>
+<details><summary>What is "nonproportional" damping geometrically?</summary>
+<p>The damping form \(\vb{q}^{\T}\vb{C}\vb{q}\) is a third ellipse whose axes do not line up with the common axes of the \(\vb{M}\) and \(\vb{K}\) ellipses. The change of axes that diagonalizes \(\vb{M}\) and \(\vb{K}\) leaves \(\vb{C}\) with off-diagonal terms, so the modes talk to each other.</p></details>
+
+<details><summary>Why does the force projection \(p_r=\vb{\phi}_r^{\T}\vb{f}\) contain no \(\vb{M}\), while \({\eta}_r=\vb{\phi}_r^{\T}\vb{M}\vb{q}\) does?</summary>
+<p>Multiply \(\vb{M}\ddot{\vb{q}}+\vb{K}\vb{q}=\vb{f}\) by \(\vb{\phi}_r^{\T}\) and insert \(\vb{q}=\vb{\Phi}\vb{\eta}\). The left side becomes \(\ddot {\eta}_r+\omega_r^2{\eta}_r\) by orthonormality, and the right side is \(\vb{\phi}_r^{\T}\vb{f}\), so no \(\vb{M}\) is left on that side. The \(\vb{M}\) in \({\eta}_r=\vb{\phi}_r^{\T}\vb{M}\vb{q}\) comes from the same orthonormality read backwards: it is what makes \(\vb{\phi}_r^{\T}\vb{M}\vb{\Phi}\vb{\eta}={\eta}_r\).</p></details>
+<details><summary>Why can a cross receptance have no antiresonance when \(H_{ii}\) always does?</summary>
+<p>Between \(\omega_1\) and \(\omega_2\) the two modal terms have opposite denominator signs. They cancel only when the residues \(\phi_{i1}\phi_{j1}\) and \(\phi_{i2}\phi_{j2}\) share a sign. For \(i=j\) both residues are squares. For \(i\neq j\) the product \(\phi_{i1}\phi_{j1}\,\phi_{i2}\phi_{j2}\) can be negative, for example when mode 1 moves the masses in phase and mode 2 moves them out of phase.</p></details>
+
+<footer>Slides: Lecture 22 (modal transformation, uncoupled model, modal forcing and generalized force, initial conditions through \(\vb{\Phi}^{\T}\vb{M}\), proportional damping, forced modal response, truncation, nonproportional damping). Mode shapes are mass-normalized. Labels inside the plots are plain text; the equations on the page are typeset with KaTeX.</footer>
+</div>
+
+<script src="assets/katex/katex.min.js"></script>
+<script src="assets/katex/auto-render.min.js"></script>
+<script src="assets/math.js"></script>
+<script src="assets/phonebar.js"></script>
+<script src="assets/layout.js"></script>
+<script src="assets/lib.js"></script>
+<script>
+(function(){
+const {ro,TeX,C,Plot,bind,val,chk,setVal,drag,eig2,f3,TAU,animate}=TUT;
+const S=id=>document.getElementById(id);
+const pa=new Plot(S('ca'),{pad:[40,12,12,34],equal:true,xmin:-1,xmax:1,ymin:-1,ymax:1});
+const pb=new Plot(S('cb'),{pad:[40,12,12,34],equal:true,xmin:-1,xmax:1,ymin:-1,ymax:1});
+const pf=new Plot(S('cf'),{pad:[56,14,12,38],xmin:0,xmax:1,ymin:1e-2,ymax:1e2,ylog:true});
+let X=[0.55,0.45];
+const ids=['m1','m2','k1','k2','k3'];
+function sys(){const [m1,m2,k1,k2,k3]=ids.map(val);const E=eig2(m1,m2,k1,k2,k3);Object.assign(E,{m1,m2,k1,k2,k3});return E;}
+const quad=(K,x)=>K[0][0]*x[0]*x[0]+2*K[0][1]*x[0]*x[1]+K[1][1]*x[1]*x[1];
+function ell(Q,L){const xs=[],ys=[];for(let i=0;i<=240;i++){const s=TAU*i/240,u=[Math.cos(s),Math.sin(s)],r=Math.sqrt(L/quad(Q,u));xs.push(r*u[0]);ys.push(r*u[1]);}return [xs,ys];}
+const toQ=(E,x)=>E.phi.map(p=>E.m1*p[0]*x[0]+E.m2*p[1]*x[1]);
+const toX=(E,q)=>[E.phi[0][0]*q[0]+E.phi[1][0]*q[1],E.phi[0][1]*q[0]+E.phi[1][1]*q[1]];
+
+function drawPlanes(E){
+  const q=toQ(E,X), det=E.a*E.d-E.b*E.b, w=E.lam.map(Math.sqrt);
+  const R=1.15*Math.max(1/Math.sqrt(E.m1),1/Math.sqrt(E.m2),Math.sqrt(E.d/det),Math.sqrt(E.a/det),Math.hypot(X[0],X[1])*0.9);
+  pa.set({xmin:-R,xmax:R,ymin:-R,ymax:R}); pa.begin(); pa.axes({zero:true,xlabel:'q₁',ylabel:'q₂'});
+  const [mx,my]=ell(E.M,1);pa.line(mx,my,C.ink,2.4);const [kx,ky]=ell(E.K,1);pa.line(kx,ky,C.plum,2.2,[7,4]);
+  [[0,C.blue],[1,C.orange]].forEach(([r,col])=>{const v=E.phi[r],n=Math.hypot(v[0],v[1]);pa.line([-v[0]/n*3*R,v[0]/n*3*R],[-v[1]/n*3*R,v[1]/n*3*R],col,1.2,[6,4]);});
+  const c1=[q[0]*E.phi[0][0],q[0]*E.phi[0][1]],c2=[q[1]*E.phi[1][0],q[1]*E.phi[1][1]];
+  pa.line([c1[0],X[0]],[c1[1],X[1]],C.orange,1.3,[4,3]);pa.line([c2[0],X[0]],[c2[1],X[1]],C.blue,1.3,[4,3]);
+  pa.arrow(0,0,c1[0],c1[1],C.blue,3.2,11);pa.arrow(0,0,c2[0],c2[1],C.orange,3.2,11);
+  if(chk('eu')){const p=E.phi[0],n2=p[0]*p[0]+p[1]*p[1],s=(X[0]*p[0]+X[1]*p[1])/n2;pa.line([X[0],s*p[0]],[X[1],s*p[1]],C.axis,1,[2,3]);pa.ring(s*p[0],s*p[1],C.blue,6);
+    const r=E.phi[1],m2=r[0]*r[0]+r[1]*r[1],t=(X[0]*r[0]+X[1]*r[1])/m2;pa.line([X[0],t*r[0]],[X[1],t*r[1]],C.axis,1,[2,3]);pa.ring(t*r[0],t*r[1],C.orange,6);}
+  pa.dot(X[0],X[1],C.red,7,'#fff');
+  pa.text('η₁φ₁',c1[0],c1[1],C.blue,{dx:8,dy:-8,bold:true,size:12});pa.text('η₂φ₂',c2[0],c2[1],C.orange,{dx:8,dy:-8,bold:true,size:12});
+  // modal plane
+  const Rq=1.15*Math.max(1/w[0],1,Math.hypot(q[0],q[1])*0.95);
+  pb.set({xmin:-Rq,xmax:Rq,ymin:-Rq,ymax:Rq});pb.begin();pb.axes({zero:true,xlabel:'η₁',ylabel:'η₂'});
+  pb.line([-Rq,Rq],[0,0],C.blue,1.4);pb.line([0,0],[-Rq,Rq],C.orange,1.4);
+  pb.arc(0,0,1,0,TAU,C.ink,2.4);
+  const ex=[],ey=[];for(let i=0;i<=240;i++){const s=TAU*i/240;ex.push(Math.cos(s)/w[0]);ey.push(Math.sin(s)/w[1]);}
+  pb.line(ex,ey,C.plum,2.2,[7,4]);
+  pb.line([q[0],q[0]],[0,q[1]],C.blue,1.6,[4,3]);pb.line([0,q[0]],[q[1],q[1]],C.orange,1.6,[4,3]);
+  pb.arrow(0,0,q[0],0,C.blue,3.2,10);pb.arrow(0,0,0,q[1],C.orange,3.2,10);
+  pb.dot(q[0],q[1],C.red,7,'#fff');
+  pb.text('semi-axis 1/ω₁',ex[0],0,C.plum,{dx:-6,dy:-12,align:'right',size:12});
+  // numbers
+  const L=E.lam;const T=[[0,1],[2,3]];
+  const PMP=[[0,0],[0,0]],PKP=[[0,0],[0,0]];
+  for(let i=0;i<2;i++)for(let j=0;j<2;j++){PMP[i][j]=E.m1*E.phi[i][0]*E.phi[j][0]+E.m2*E.phi[i][1]*E.phi[j][1];
+    PKP[i][j]=E.K[0][0]*E.phi[i][0]*E.phi[j][0]+E.K[0][1]*(E.phi[i][0]*E.phi[j][1]+E.phi[i][1]*E.phi[j][0])+E.K[1][1]*E.phi[i][1]*E.phi[j][1];}
+  const mat=A=>TeX('\\begin{bmatrix}'+f3(A[0][0])+'&'+f3(A[0][1])+'\\\\'+f3(A[1][0])+'&'+f3(A[1][1])+'\\end{bmatrix}');
+  ro(S('ro'),[['\\(\\vb{q}=(q_1,\\ q_2)\\)','('+f3(X[0])+', '+f3(X[1])+')'],['\\(\\vb{\\eta}=\\vb{\\Phi}\\T\\vb{M}\\vb{q}\\)','('+f3(q[0])+', '+f3(q[1])+')'],
+   ['\\(\\vb{q}\\T\\vb{M}\\vb{q}\\) vs \\({\\eta}_1^2+{\\eta}_2^2\\)',f3(quad(E.M,X))+'  vs  '+f3(q[0]*q[0]+q[1]*q[1])],
+   ['\\(\\vb{q}\\T\\vb{K}\\vb{q}\\) vs \\(\\sum_r\\omega_r^2{\\eta}_r^2\\)',f3(quad(E.K,X))+'  vs  '+f3(L[0]*q[0]*q[0]+L[1]*q[1]*q[1])],
+   ['\\(\\vb{\\Phi}\\T\\vb{M}\\vb{\\Phi}\\)',mat(PMP)],['\\(\\vb{\\Phi}\\T\\vb{K}\\vb{\\Phi}\\)',mat(PKP)],['\\(\\omega_1,\\ \\omega_2\\)',Math.sqrt(L[0]).toFixed(4)+',  '+Math.sqrt(L[1]).toFixed(4)]]);
+}
+// complex helpers
+const cmul=(a,b)=>[a[0]*b[0]-a[1]*b[1],a[0]*b[1]+a[1]*b[0]];
+const cdiv=(a,b)=>{const d=b[0]*b[0]+b[1]*b[1];return [(a[0]*b[0]+a[1]*b[1])/d,(a[1]*b[0]-a[0]*b[1])/d];};
+const cabs=a=>Math.hypot(a[0],a[1]);
+function damping(E){
+  const al=val('al'),be=val('be'),cg=val('cg');
+  const c11=al*E.m1+be*E.a,c12=be*E.b,c22=al*E.m2+be*E.d+cg;
+  const Cm=[[c11,c12],[c12,c22]];
+  const md=E.phi.map(p=>quad(Cm,p));          // phi_r^T C phi_r = 2 zeta_r omega_r
+  const off=Cm[0][0]*E.phi[0][0]*E.phi[1][0]+Cm[0][1]*(E.phi[0][0]*E.phi[1][1]+E.phi[0][1]*E.phi[1][0])+Cm[1][1]*E.phi[0][1]*E.phi[1][1];
+  return {Cm,md,off,cg};
+}
+function frf(E,D,Om,i,j){
+  // modal terms
+  const terms=E.phi.map((p,r)=>cdiv([p[i]*p[j],0],[E.lam[r]-Om*Om,Om*D.md[r]]));
+  // exact
+  const a=[E.a-Om*Om*E.m1,Om*D.Cm[0][0]],b=[E.b,Om*D.Cm[0][1]],d=[E.d-Om*Om*E.m2,Om*D.Cm[1][1]];
+  const det=[cmul(a,d)[0]-cmul(b,b)[0],cmul(a,d)[1]-cmul(b,b)[1]];
+  const inv=[[d,[-b[0],-b[1]]],[[-b[0],-b[1]],a]];
+  const ex=cdiv(inv[i][j],det);
+  return {terms,ex};
+}
+function drawFRF(E){
+  const D=damping(E),i=+S('fi').value,j=+S('fj').value,w=E.lam.map(Math.sqrt),Omax=1.4*w[1],keep=[chk('k1c'),chk('k2c')],sc=chk('sc');
+  const N=500,Os=[],tot=[],t1=[],t2=[],exa=[],ret=[];
+  let lo=1e9,hi=0;
+  for(let n=0;n<=N;n++){
+    const Om=Math.max(Omax*n/N,1e-3),F=frf(E,D,Om,i,j);Os.push(Om/w[1]);
+    const s=[F.terms[0][0]+F.terms[1][0],F.terms[0][1]+F.terms[1][1]];tot.push(cabs(s));t1.push(cabs(F.terms[0]));t2.push(cabs(F.terms[1]));exa.push(cabs(F.ex));
+    let r=[0,0];[0,1].forEach(k=>{if(keep[k]){r[0]+=F.terms[k][0];r[1]+=F.terms[k][1];}else if(sc){r[0]+=E.phi[k][i]*E.phi[k][j]/E.lam[k];}});
+    ret.push(cabs(r));
+  }
+  [tot,t1,t2,exa].forEach(a=>a.forEach(v=>{if(v>0){lo=Math.min(lo,v);hi=Math.max(hi,v);}}));
+  const ly=Math.floor(Math.log10(lo))-0.0,hy=Math.ceil(Math.log10(hi));
+  pf.set({xmax:1.4,ymin:Math.pow(10,ly),ymax:Math.pow(10,hy)});pf.begin();pf.axes({xlabel:'Ω / ω₂',ylabel:'|H_ij|',xticks:[0,0.2,0.4,0.6,0.8,1,1.2,1.4]});
+  pf.line([w[0]/w[1],w[0]/w[1]],[pf.o.ymin,pf.o.ymax],'#bcd6ea',1.2,[4,4]);pf.line([1,1],[pf.o.ymin,pf.o.ymax],'#f1c9b3',1.2,[4,4]);
+  pf.line(Os,t1,C.blue,1.6);pf.line(Os,t2,C.orange,1.6);
+  if(D.cg>0)pf.line(Os,exa,C.green,2.4,[2,3]);
+  pf.line(Os,tot,C.ink,2.8);
+  if(!(keep[0]&&keep[1]&&!sc)||true)pf.line(Os,ret,C.red,2.2,[8,5]);
+  const Om=val('Om')*w[1],F=frf(E,D,Om,i,j),th=cabs([F.terms[0][0]+F.terms[1][0],F.terms[0][1]+F.terms[1][1]]);
+  pf.dot(Om/w[1],th,C.red,6.5,'#fff');
+  // bookkeeping
+  const f=[E.phi[0][j],E.phi[1][j]],rows=[['Driving frequency \\(\\Omega\\)',Om.toFixed(4)+'  ('+TeX('\\Omega/\\omega_2='+(Om/w[1]).toFixed(3))+')'],
+   ['Damping ratios \\(\\zeta_1,\\ \\zeta_2\\) (diagonal part)',(D.md[0]/(2*w[0])).toFixed(4)+',  '+(D.md[1]/(2*w[1])).toFixed(4)],
+   ['\\((\\vb{\\Phi}\\T\\vb{C}\\vb{\\Phi})_{12}\\) coupling term',D.off.toFixed(4)+(Math.abs(D.off)>5e-4?'   → modes coupled':'   → decoupled')]];
+  [0,1].forEach(r=>{const q=F.terms[r];rows.push(['Mode '+(r+1)+': \\(\\phi_{jr}\\); contribution to \\(q_i\\)',TeX('\\phi_{jr}='+f3(f[r]))+';  '+TeX(f3(q[0])+(q[1]<0?'-':'+')+f3(Math.abs(q[1]))+'\\,i')+'  ('+TeX('|\\cdot|='+cabs(q).toFixed(4))+')']);});
+  rows.push(['Sum of modes \\(|H_{ij}|\\)',th.toFixed(4)],['Exact \\(|H_{ij}|\\)',cabs(F.ex).toFixed(4)]);
+  const Ki=[[E.d,-E.b],[-E.b,E.a]],dk=E.a*E.d-E.b*E.b;rows.push(['Static compliance \\((\\vb{K}^{-1})_{ij}\\)',(Ki[i][j]/dk).toFixed(4)]);
+  ro(S('mb'),rows);
+}
+
+/* ---------- Section 3: where the force goes ---------- */
+const pw=new Plot(S('cw'),{pad:[40,12,12,34],equal:true,xmin:-1.5,xmax:1.5,ymin:-1.5,ymax:1.5});
+const pq=new Plot(S('cq'),{pad:[48,12,12,38],xmin:0,xmax:1.4,ymin:0,ymax:1});
+let Fv=[0.8,0.6];
+const dotv=(a,b)=>a[0]*b[0]+a[1]*b[1];
+function drawForce(E){
+  const D=damping(E),w=E.lam.map(Math.sqrt),R=1.5,Q=E.phi.map(p=>dotv(p,Fv));
+  pw.begin();pw.axes({zero:true,xlabel:'f₁',ylabel:'f₂'});
+  [0,1].forEach(r=>{const p=E.phi[r],n=Math.hypot(p[0],p[1]),u=[p[0]/n,p[1]/n],col=r?C.orange:C.blue;
+    pw.line([-3*R*u[0],3*R*u[0]],[-3*R*u[1],3*R*u[1]],col,1.8);
+    pw.line([3*R*u[1],-3*R*u[1]],[-3*R*u[0],3*R*u[0]],col,1.4,[6,4]);
+    const s=dotv(u,Fv);pw.line([Fv[0],s*u[0]],[Fv[1],s*u[1]],C.axis,1,[2,3]);pw.ring(s*u[0],s*u[1],col,6);
+    pw.text('φ'+(r+1),u[0]*1.3,u[1]*1.3,col,{bold:true,size:13,dx:6,dy:-6});
+    pw.text('p'+(r+1)+'=0',-u[1]*1.2,u[0]*1.2,col,{size:12,dx:4,dy:10});});
+  pw.arrow(0,0,Fv[0],Fv[1],C.red,3.2,11);pw.dot(Fv[0],Fv[1],C.red,6,'#fff');
+  pw.text('f',Fv[0],Fv[1],C.red,{bold:true,size:13,dx:9,dy:-9});
+  // modal response amplitudes vs Omega
+  const N=400,Os=[],a1=[],a2=[];let mx=0;
+  for(let n=0;n<=N;n++){const Om=Math.max(1.4*w[1]*n/N,1e-3);Os.push(Om/w[1]);
+    const g=r=>Math.abs(Q[r])/Math.hypot(E.lam[r]-Om*Om,Om*D.md[r]);const u=g(0),v=g(1);a1.push(u);a2.push(v);mx=Math.max(mx,u,v);}
+  pq.set({ymax:mx>1e-9?mx*1.1:1});pq.begin();pq.axes({xlabel:'Ω / ω₂',ylabel:'|η_r|',xticks:[0,0.2,0.4,0.6,0.8,1,1.2,1.4]});
+  pq.line([w[0]/w[1],w[0]/w[1]],[0,pq.o.ymax],'#bcd6ea',1.2,[4,4]);pq.line([1,1],[0,pq.o.ymax],'#f1c9b3',1.2,[4,4]);
+  pq.line(Os,a1,C.blue,2.4);pq.line(Os,a2,C.orange,2.4);
+  const Om=val('Om')*w[1];const amp=r=>Math.abs(Q[r])/Math.hypot(E.lam[r]-Om*Om,Om*D.md[r]);
+  pq.dot(Om/w[1],amp(0),C.blue,5.5,'#fff');pq.dot(Om/w[1],amp(1),C.orange,5.5,'#fff');
+  [0,1].forEach(r=>{if(Math.abs(Q[r])<5e-4)pq.text('mode '+(r+1)+' silenced (p'+(r+1)+' = 0)',0.04,pq.o.ymax*(0.9-0.08*r),r?C.orange:C.blue,{bold:true,size:12});});
+  // physical response q_i = sum_r phi_ir eta_r (complex)
+  const qc=[0,1].map(r=>cdiv([Q[r],0],[E.lam[r]-Om*Om,Om*D.md[r]])),xa=[0,1].map(i=>cabs([E.phi[0][i]*qc[0][0]+E.phi[1][i]*qc[1][0],E.phi[0][i]*qc[0][1]+E.phi[1][i]*qc[1][1]]));
+  const nf=Math.hypot(Fv[0],Fv[1]);
+  ro(S('fq'),[['\\(\\vb{f}=(f_1,f_2)\\), \\(|\\vb{f}|\\)','('+f3(Fv[0])+', '+f3(Fv[1])+'),  '+nf.toFixed(3)],
+    ['\\(p_1=\\vb{\\phi}_1^{\\T}\\vb{f}\\)',f3(Q[0])+(Math.abs(Q[0])<5e-4?'   → mode 1 silenced':'')],['\\(p_2=\\vb{\\phi}_2^{\\T}\\vb{f}\\)',f3(Q[1])+(Math.abs(Q[1])<5e-4?'   → mode 2 silenced':'')],
+    ['\\(\\vb{\\phi}_1,\\ \\vb{\\phi}_2\\)',TeX('\\begin{Bmatrix}'+f3(E.phi[0][0])+'\\\\'+f3(E.phi[0][1])+'\\end{Bmatrix},\\ \\begin{Bmatrix}'+f3(E.phi[1][0])+'\\\\'+f3(E.phi[1][1])+'\\end{Bmatrix}')],
+    ['Steady amplitudes \\(|{\\eta}_1|,\\ |{\\eta}_2|\\) at \\(\\Omega/\\omega_2='+(Om/w[1]).toFixed(3)+'\\)',amp(0).toFixed(4)+',  '+amp(1).toFixed(4)],
+    ['Physical amplitudes \\(|q_1|,\\ |q_2|\\)',xa[0].toFixed(4)+',  '+xa[1].toFixed(4)]]);
+}
+function silence(r){const E=sys(),p=E.phi[r],n=Math.hypot(p[0],p[1]);let u=[-p[1]/n,p[0]/n],m=Math.hypot(Fv[0],Fv[1]);if(m<0.05)m=1;if(dotv(u,Fv)<0)u=[-u[0],-u[1]];Fv=[m*u[0],m*u[1]];draw();}
+S('sil1').onclick=()=>silence(0);S('sil2').onclick=()=>silence(1);
+S('fon1').onclick=()=>{Fv=[Math.max(0.3,Math.hypot(Fv[0],Fv[1])),0];draw();};S('fon2').onclick=()=>{Fv=[0,Math.max(0.3,Math.hypot(Fv[0],Fv[1]))];draw();};
+drag(S('cw'),pw,(x,y)=>{Fv=[Math.max(-1.45,Math.min(1.45,x)),Math.max(-1.45,Math.min(1.45,y))];draw();});
+
+/* ---------- Section 4: modal terms as arrows in the complex plane ---------- */
+const ppc=new Plot(S('cph'),{pad:[48,12,12,38],equal:true,xmin:-1,xmax:1,ymin:-1,ymax:1});
+function drawPhasor(E){
+  const D=damping(E),i=+S('fi').value,j=+S('fj').value,w=E.lam.map(Math.sqrt),Om=val('Om')*w[1],F=frf(E,D,Om,i,j);
+  const t1=F.terms[0],t2=F.terms[1],sm=[t1[0]+t2[0],t1[1]+t2[1]],tip=[t1[0]+t2[0],t1[1]+t2[1]];
+  const xs=[0,t1[0],sm[0]],ys=[0,t1[1],sm[1]],x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  const h=0.62*Math.max(x1-x0,y1-y0,1e-6),cx=(x0+x1)/2,cy=(y0+y1)/2;
+  ppc.set({xmin:cx-h,xmax:cx+h,ymin:cy-h,ymax:cy+h});ppc.begin();ppc.axes({zero:true,xlabel:'Re',ylabel:'Im'});
+  ppc.arrow(0,0,sm[0],sm[1],C.ink,3.6,12);
+  ppc.arrow(0,0,t1[0],t1[1],C.blue,3,11);ppc.arrow(t1[0],t1[1],tip[0],tip[1],C.orange,3,11);
+  ppc.dot(0,0,C.ink,3.5);
+  const big=Math.max(cabs(t1),cabs(t2));
+  ppc.text('mode 1',t1[0]/2,t1[1]/2,C.blue,{bold:true,size:12,dx:6,dy:-10});
+  ppc.text('mode 2',(t1[0]+tip[0])/2,(t1[1]+tip[1])/2,C.orange,{bold:true,size:12,dx:6,dy:10});
+  ppc.text('H_ij',sm[0],sm[1],C.ink,{bold:true,size:13,dx:8,dy:-9});
+  if(cabs(sm)<0.08*big)ppc.text('terms nearly cancel: antiresonance',cx-h*0.95,cy+h*0.9,C.copper,{bold:true,size:13});
+  // table
+  const r1=E.phi[0][i]*E.phi[0][j],r2=E.phi[1][i]*E.phi[1][j],same=r1*r2>0;
+  const rows=[['\\(\\Omega/\\omega_2\\)',(Om/w[1]).toFixed(3)],
+   ['Mode 1 term',TeX(f3(t1[0])+(t1[1]<0?'-':'+')+f3(Math.abs(t1[1]))+'\\,i')+'  ('+TeX('|\\cdot|='+cabs(t1).toFixed(4))+')'],
+   ['Mode 2 term',TeX(f3(t2[0])+(t2[1]<0?'-':'+')+f3(Math.abs(t2[1]))+'\\,i')+'  ('+TeX('|\\cdot|='+cabs(t2).toFixed(4))+')'],
+   ['Sum \\(H_{ij}\\)',TeX(f3(sm[0])+(sm[1]<0?'-':'+')+f3(Math.abs(sm[1]))+'\\,i')+'  ('+TeX('|H_{ij}|='+cabs(sm).toFixed(4))+')'],
+   ['Residues \\(\\phi_{i1}\\phi_{j1},\\ \\phi_{i2}\\phi_{j2}\\)',f3(r1)+',  '+f3(r2)+(same?'  (same sign)':'  (opposite signs)')],
+   ['Between \\(\\omega_1\\) and \\(\\omega_2\\)',same?'the arrows point opposite ways and can cancel':'the arrows point the same way: no cancellation']];
+  if(i===j){const Oa=Math.sqrt(i===0?E.d/E.m2:E.a/E.m1);rows.push(['Antiresonance (zero for \\(c=0\\))',TeX('\\Omega_a='+Oa.toFixed(4)+',\\ \\Omega_a/\\omega_2='+(Oa/w[1]).toFixed(3))+(Oa>w[0]&&Oa<w[1]?' (between the modes)':'')]);}
+  else rows.push(['Antiresonance','none: the numerator of \\(H_{ij}\\) is the constant '+TeX('k_2')]);
+  ro(S('pt'),rows);
+}
+let sweepOn=false;
+S('sw').onclick=e=>{sweepOn=!sweepOn;e.target.textContent=sweepOn?'Stop sweep':'Sweep Ω';};
+S('oa').onclick=()=>{const E=sys(),i=+S('fi').value,j=+S('fj').value;if(i!==j)return;const w=E.lam.map(Math.sqrt),Oa=Math.sqrt(i===0?E.d/E.m2:E.a/E.m1);setVal('Om',Math.min(1.4,Oa/w[1]));draw();};
+
+/* ---------- Section 5: free response through Phi^T M ---------- */
+const pm=new Plot(S('cm'),{pad:[40,12,12,34],equal:true,xmin:-1.2,xmax:1.2,ymin:-1.2,ymax:1.2});
+const pxt=new Plot(S('cx'),{pad:[48,12,10,26],xmin:0,xmax:1,ymin:-1,ymax:1});
+const pqt=new Plot(S('cqt'),{pad:[48,12,10,32],xmin:0,xmax:1,ymin:-1,ymax:1});
+let IC=[0.4,0.8],tf=0;
+function icQ(E){return toQ(E,IC);}   // Phi^T M applied to the initial point
+function freeSol(E){
+  const w=E.lam.map(Math.sqrt),D=damping(E),vel=S('ict').value==='v',dmp=chk('dmp'),qi=icQ(E),q0=vel?[0,0]:qi,qd0=vel?qi:[0,0];
+  const z=w.map((wr,r)=>dmp?Math.min(D.md[r]/(2*wr),0.995):0),wd=w.map((wr,r)=>wr*Math.sqrt(1-z[r]*z[r]));
+  const q=t=>[0,1].map(r=>Math.exp(-z[r]*w[r]*t)*(q0[r]*(Math.cos(wd[r]*t)+z[r]*w[r]/wd[r]*Math.sin(wd[r]*t))+qd0[r]/wd[r]*Math.sin(wd[r]*t)));
+  return {w,z,q0,qd0,vel,q,x:t=>{const a=q(t);return [E.phi[0][0]*a[0]+E.phi[1][0]*a[1],E.phi[0][1]*a[0]+E.phi[1][1]*a[1]];}};
+}
+function drawFree(E){
+  const Fr=freeSol(E),vel=Fr.vel,w=Fr.w,tmax=4*TAU/w[0],N=400,ts=[],X1=[],X2=[],Q1=[],Q2=[];let ax=1e-9,aq=1e-9;
+  for(let n=0;n<=N;n++){const t=tmax*n/N,x=Fr.x(t),q=Fr.q(t);ts.push(t);X1.push(x[0]);X2.push(x[1]);Q1.push(q[0]);Q2.push(q[1]);ax=Math.max(ax,Math.abs(x[0]),Math.abs(x[1]));aq=Math.max(aq,Math.abs(q[0]),Math.abs(q[1]));}
+  // plane with the initial point
+  pm.begin();pm.axes({zero:true,xlabel:vel?'q̇₁(0)':'q₁(0)',ylabel:vel?'q̇₂(0)':'q₂(0)'});
+  [[0,C.blue],[1,C.orange]].forEach(([r,col])=>{const v=E.phi[r],n=Math.hypot(v[0],v[1]);pm.line([-v[0]/n*3,v[0]/n*3],[-v[1]/n*3,v[1]/n*3],col,1.4,[6,4]);});
+  pm.arrow(0,0,IC[0],IC[1],C.red,2.6,10);pm.dot(IC[0],IC[1],C.red,7,'#fff');
+  // time series
+  const tc=tf%tmax,xc=Fr.x(tc),qc=Fr.q(tc);
+  pxt.set({xmin:0,xmax:tmax,ymin:-ax*1.1,ymax:ax*1.1});pxt.begin();pxt.axes({ylabel:'q_i',xticks:[]});
+  pxt.line(ts,X1,C.ink,2.2);pxt.line(ts,X2,C.plum,2.2);pxt.line([tc,tc],[-ax*1.1,ax*1.1],C.axis,1,[3,3]);pxt.dot(tc,xc[0],C.ink,5,'#fff');pxt.dot(tc,xc[1],C.plum,5,'#fff');
+  pqt.set({xmin:0,xmax:tmax,ymin:-aq*1.1,ymax:aq*1.1});pqt.begin();pqt.axes({xlabel:'time t',ylabel:'η_r'});
+  pqt.line(ts,Q1,C.blue,2.2);pqt.line(ts,Q2,C.orange,2.2);pqt.line([tc,tc],[-aq*1.1,aq*1.1],C.axis,1,[3,3]);pqt.dot(tc,qc[0],C.blue,5,'#fff');pqt.dot(tc,qc[1],C.orange,5,'#fff');
+  // numbers
+  const qi=icQ(E),Mx=[E.m1*IC[0],E.m2*IC[1]],fv=a=>'\\begin{Bmatrix}'+f3(a[0])+'\\\\'+f3(a[1])+'\\end{Bmatrix}';
+  const Etot_x=vel?0.5*(E.m1*IC[0]*IC[0]+E.m2*IC[1]*IC[1]):0.5*quad(E.K,IC),Etot_q=vel?0.5*(qi[0]*qi[0]+qi[1]*qi[1]):0.5*(E.lam[0]*qi[0]*qi[0]+E.lam[1]*qi[1]*qi[1]);
+  ro(S('fr'),[[vel?'\\(\\dot{\\vb{q}}(0)\\) (and \\(\\vb{q}(0)=\\vb{0}\\))':'\\(\\vb{q}(0)\\) (and \\(\\dot{\\vb{q}}(0)=\\vb{0}\\))',TeX(fv(IC))],
+    ['\\(\\vb{M}\\) times it',TeX(fv(Mx))],
+    [vel?'\\(\\dot{\\vb{\\eta}}(0)=\\vb{\\Phi}^{\\T}\\vb{M}\\dot{\\vb{q}}(0)\\)':'\\(\\vb{\\eta}(0)=\\vb{\\Phi}^{\\T}\\vb{M}\\vb{q}(0)\\)',TeX(fv(qi))+(Math.abs(qi[0])<5e-4?'   → mode 1 absent':Math.abs(qi[1])<5e-4?'   → mode 2 absent':'')],
+    ['Wrong shortcut \\(\\vb{\\Phi}^{\\T}\\vb{q}(0)\\) (no \\(\\vb{M}\\))',TeX(fv([E.phi[0][0]*IC[0]+E.phi[0][1]*IC[1],E.phi[1][0]*IC[0]+E.phi[1][1]*IC[1]]))],
+    ['\\(\\omega_r\\), \\(\\zeta_r\\) used',w[0].toFixed(4)+', '+w[1].toFixed(4)+';  '+Fr.z[0].toFixed(4)+', '+Fr.z[1].toFixed(4)],
+    [vel?'Initial energy: \\(\\tfrac12\\dot{\\vb{q}}^{\\T}\\vb{M}\\dot{\\vb{q}}\\) vs \\(\\tfrac12\\sum\\dot {\\eta}_r^2\\)':'Initial energy: \\(\\tfrac12\\vb{q}^{\\T}\\vb{K}\\vb{q}\\) vs \\(\\tfrac12\\sum\\omega_r^2{\\eta}_r^2\\)',Etot_x.toFixed(5)+'  vs  '+Etot_q.toFixed(5)]]);
+}
+function setIC(x){IC=x;draw();}
+S('pl1').onclick=()=>{S('ict').value='d';S('ict').dispatchEvent(new Event('change'));setIC([0.8,0]);};
+S('pl2').onclick=()=>{S('ict').value='d';S('ict').dispatchEvent(new Event('change'));setIC([0,0.8]);};
+const shape=r=>{const E=sys(),p=E.phi[r],m=Math.max(Math.abs(p[0]),Math.abs(p[1]));S('ict').value='d';S('ict').dispatchEvent(new Event('change'));setIC([0.8*p[0]/m,0.8*p[1]/m]);};
+S('ms1').onclick=()=>shape(0);S('ms2').onclick=()=>shape(1);
+drag(S('cm'),pm,(x,y)=>{IC=[Math.max(-1.15,Math.min(1.15,x)),Math.max(-1.15,Math.min(1.15,y))];draw();});
+
+function draw(){const E=sys();drawPlanes(E);drawFRF(E);drawForce(E);drawPhasor(E);drawFree(E);}
+bind(['m1','m2','k1','k2','k3','al','be','cg','Om'],draw);
+['eu','fi','fj','k1c','k2c','sc','ict','dmp'].forEach(id=>S(id).addEventListener('change',draw));
+drag(S('ca'),pa,(px,py)=>{X=[px,py];draw();});
+drag(S('cb'),pb,(qx,qy)=>{const E=sys();X=toX(E,[qx,qy]);draw();});
+S('o1').onclick=()=>{const E=sys();setVal('Om',Math.sqrt(E.lam[0]/E.lam[1]));draw();};
+S('o2').onclick=()=>{setVal('Om',1);draw();};
+window.addEventListener('resize',draw);
+const ctl=animate(dt=>{let go=false;
+  if(sweepOn){let u=val('Om')+dt*0.07;if(u>1.4)u=0.02;setVal('Om',u);go=true;}
+  const E=sys(),tm=4*TAU/Math.sqrt(E.lam[0]);tf=(tf+dt*tm/14)%tm;
+  if(go)draw();else drawFree(E);});
+draw();
+})();
+</script>
+</body>
+</html>

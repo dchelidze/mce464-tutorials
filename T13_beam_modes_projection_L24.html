@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tutorial 13: Beam Modes and Modal Projection</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+/* controls that act on one figure sit with that figure, not in the sidebar */
+.figbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:12px 0 2px;padding:8px 12px;background:var(--card);border:1px solid var(--rule);border-radius:10px}
+.figbar button{margin:0}
+.figbar label{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:14px;font-weight:600}
+.figbar label.chk{font-weight:500}
+.figbar .sep{width:1px;align-self:stretch;background:var(--rule);margin:0 4px}
+/* long display equations scroll inside their own box on narrow screens */
+@media (max-width:980px){.katex-display{overflow-x:auto;overflow-y:hidden;padding:.45em 0}}
+.main p,.main li,.main td{overflow-wrap:break-word}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <nav class="tn"><a href="index.html">All tutorials</a><a href="T12_dynamic_absorber_L23_v2.html">&larr; Tutorial 12</a></nav>
+  <div class="kicker">MCE 464 &middot; Tutorial 13 &middot; Lecture 24</div>
+  <h1>Beam Modes: Boundary Conditions, Spectrum and Modal Projection</h1>
+  <p class="lede">A beam replaces the coordinate vector with a displacement field \(w(x,t)\). The four end conditions decide which shapes are admissible and therefore which frequencies exist. Once the modes are known, projection turns a distributed load into one generalized force per mode, and a few modes often suffice. This page shows both steps and checks each against an independent result.</p>
+</div></header>
+<div class="wrap">
+
+<h2>1. Boundary conditions define the spectrum</h2>
+<p>For free vibration of a uniform Euler&ndash;Bernoulli beam, \(w(x,t)=\phi(x)\,q(t)\) separates the beam equation into \(\ddot q+\omega^2q=0\) and the spatial eigenproblem
+$$ EI\,\phi''''-\rho A\,\omega^2\phi=0,\qquad \beta^4=\frac{\rho A\,\omega^2}{EI}, $$
+whose general solution is
+$$ \phi(x)=a_1\sin\beta x+a_2\cos\beta x+a_3\sinh\beta x+a_4\cosh\beta x. $$
+Each end supplies two conditions: clamped \(w=w'=0\), pinned \(w=w''=0\), free \(w''=w'''=0\). The four conditions are linear in \(\vb{a}=[a_1\ a_2\ a_3\ a_4]\T\), so they read \(\vb{B}(\beta L)\,\vb{a}=\vb{0}\). A nontrivial shape needs
+$$ \det\vb{B}(\beta L)=0, $$
+the frequency equation. Its roots \(\beta_nL\) give
+$$ \omega_n=(\beta_nL)^2\sqrt{\frac{EI}{\rho A L^4}}. $$
+The page builds \(\vb{B}\) from the end conditions you pick, finds the roots \(\beta_nL\) numerically, and takes each mode shape from the null vector of \(\vb{B}(\beta_nL)\). For pinned&ndash;pinned ends the determinant reduces to \(\sin\beta L=0\), so \(\beta_nL=n\pi\) and \(\phi_n=\sin(n\pi x/L)\), as on slide 8.</p>
+
+<div class="ctl" data-title="End conditions and modes">
+  <div><label>Left end \((x=0)\)<select id="le" class="gal"><option value="C">clamped</option><option value="P">pinned</option><option value="F">free</option></select></label></div>
+  <div><label>Right end \((x=L)\)<select id="re" class="gal"><option value="C">clamped</option><option value="P">pinned</option><option value="F" selected>free</option></select></label></div>
+  <div><label>Mode \(n\)<output id="nm_o"></output><input type="range" id="nm" min="1" max="6" step="1" value="1" data-dp="0"></label></div>
+  <div><label>Second mode \(m\) (orthogonality)<output id="mm_o"></output><input type="range" id="mm" min="1" max="6" step="1" value="2" data-dp="0"></label></div>
+</div>
+
+<div class="figs">
+  <div class="fig"><div class="ttl">Frequency function \(\det\vb{B}(\beta L)/\cosh\beta L\)</div>
+    <canvas id="cg" data-ar="0.62"></canvas>
+    <div class="cap">Dividing by \(\cosh\beta L\) keeps the curve bounded without moving its zeros. Red dots: the roots \(\beta_nL\). Ring: the selected mode \(n\).</div></div>
+  <div class="fig"><div class="ttl">Spectrum ladder for all end-condition pairs</div>
+    <canvas id="cl" data-ar="0.62"></canvas>
+    <div class="cap">Each row shows the first six roots \(\beta_nL\), and \(\omega_n\propto(\beta_nL)^2\). Mirror pairs (pinned&ndash;clamped and clamped&ndash;pinned) share a row. Hollow rings at \(\beta L=0\) are rigid-body modes \((\omega=0)\). The highlighted row is your choice. Dotted verticals: multiples of \(\pi\).</div></div>
+</div>
+
+<div class="figbar"><button id="pz1">Pause</button><span class="sep"></span><label class="chk"><input type="checkbox" id="curv"> show the curvature \(\phi_n''\) (dashed)</label></div>
+<div class="figs">
+  <div class="fig"><div class="ttl">Mode shape \(\phi_n(x)\cos\omega_nt\)</div>
+    <canvas id="cm" data-ar="0.5"></canvas>
+    <div class="cap"><span class="sw" style="background:#0072BD"></span>beam &nbsp; dashed grey: envelope \(\pm\phi_n\) &nbsp; <span class="sw" style="background:#A2142F"></span>nodes &nbsp; <span class="sw" style="background:#67355C"></span>curvature \(\phi_n''\) (scaled to the same peak). A clamped end has zero slope. A pinned end has zero curvature. A free end has zero curvature and zero curvature slope.</div></div>
+  <div class="fig"><div class="ttl">Numbers for this mode</div><table class="ro" id="ro1"></table></div>
+</div>
+
+<h3>Orthogonality as cancelling areas</h3>
+<p>Slide 10's orthogonality conditions are integrals over the span: \(\int_0^L\rho A\,\phi_m\phi_n\,dx=0\) and \(\int_0^L EI\,\phi_m''\phi_n''\,dx=0\) for \(m\neq n\). Geometrically, the product curve encloses as much area above the axis as below it. The integration by parts behind this works only because both modes satisfy the same end conditions, so the boundary terms vanish. Change the end conditions and the cancellation survives for every pair. For \(m=n\) the stiffness integral over the mass integral is the Rayleigh quotient, \(\int\phi_n''^2d\xi\big/\int\phi_n^2d\xi=(\beta_nL)^4\) with \(\xi=x/L\).</p>
+<div class="figbar"><label>Weight<select id="wt" class="gal"><option value="m">mass: \(\phi_m\phi_n\)</option><option value="k">stiffness: \(\phi_m''\phi_n''\)</option></select></label></div>
+<div class="figs">
+  <div class="fig"><div class="ttl">Product of modes \(m\) and \(n\) along the span</div>
+    <canvas id="co" data-ar="0.5"></canvas>
+    <div class="cap"><span class="sw" style="background:#0072BD"></span>positive area &nbsp; <span class="sw" style="background:#D95319"></span>negative area. The number printed on the plot is the normalized integral, \(\int f_mf_n\big/\sqrt{\int f_m^2\int f_n^2}\), with \(f=\phi\) or \(\phi''\). It is 1 for \(m=n\) and 0 otherwise, up to quadrature error.</div></div>
+  <div class="fig"><div class="ttl">What to notice</div>
+    <ol style="margin:4px 0 0 18px;padding:0">
+      <li>The cantilever (clamped&ndash;free) starts at \(\beta_1L=1.8751\), and \(\omega_2/\omega_1=6.267\). The pinned&ndash;pinned ratios are exactly \(n^2\) (4, 9, 16, &hellip;).</li>
+      <li>Clamped&ndash;clamped and free&ndash;free share their nonzero roots \((4.7300, 7.8532,\ldots)\). Clamped&ndash;pinned and pinned&ndash;free share theirs too \((3.9266, 7.0686,\ldots)\). Turn on the curvature to see why: the curvature of one is the shape of the other (question 1 below).</li>
+      <li>Count the nodes. Clamped&ndash;free mode \(n\) has \(n-1\) interior nodes, pinned&ndash;free has \(n\), and free&ndash;free has \(n+1\). The rigid-body modes take the lower node counts: the rotation about a pin has none, a free&ndash;free translation none and its rotation one.</li>
+      <li>For large \(n\) every row of the ladder approaches equal spacing \(\pi\). Away from the ends the shapes look like sinusoids, and the hyperbolic terms only matter near the ends.</li>
+    </ol></div>
+</div>
+
+<h2>2. Projecting a load onto the modes</h2>
+<p>Take the simply supported beam of slide 8 and expand \(w(x,t)=\sum_n\phi_n(x)\,q_n(t)\) with \(\phi_n=\sin(n\pi x/L)\). Premultiplying by \(\phi_n\) and integrating over the span (slide 11) gives
+$$ m_n=\int_0^L\rho A\,\phi_n^2\,dx=\frac{\rho AL}{2},\qquad k_n=\int_0^L EI\,\phi_n''^2\,dx=\frac{EI L}{2}\Big(\frac{n\pi}{L}\Big)^4, $$
+and the generalized force is
+$$ Q_n=\int_0^L\phi_n\,p\,dx. $$
+A point load \(F\) at \(x=a\) gives \(Q_n=F\sin(n\pi a/L)\). A uniform load \(p_0\) gives \(Q_n=p_0L\,(1-\cos n\pi)/(n\pi)\), which vanishes for every even mode. With modal damping \(c_n=2\zeta m_n\omega_n\), the truncated response is slide 12's sum
+$$ w_N(x,\Omega)=\sum_{n=1}^{N}\frac{\phi_n(x)\,Q_n}{k_n-m_n\Omega^2+i\,c_n\Omega}, $$
+and for the bending moment
+$$ M_N(x,\Omega)=-EI\,w_N''=\sum_{n=1}^{N}EI\Big(\frac{n\pi}{L}\Big)^2\frac{\phi_n(x)\,Q_n}{k_n-m_n\Omega^2+i\,c_n\Omega}. $$
+<b>Independent check.</b> At \(\Omega=0\) the exact static solution is known: \(w=Fbx(L^2-b^2-x^2)/(6EIL)\) for \(x\le a\) with \(b=L-a\), and \(w=p_0x(L^3-2Lx^2+x^3)/(24EI)\) for the uniform load. The moments are \(M=Fbx/L\) and \(M=p_0x(L-x)/2\). The dark reference curve below is this exact static solution plus the dynamic part of 200 modes, \(\sum\phi_nQ_n[H_n(\Omega)-H_n(0)]\), which converges far faster than the plain modal sum.</p>
+
+<div class="ctl" data-title="Load, output and truncation">
+  <div><label>Load<select id="lt" class="gal"><option value="p">point load \(F\) at \(a\)</option><option value="u">uniform \(p_0\)</option></select></label></div>
+  <div><label>Load position \(a/L\)<output id="la_o"></output><input type="range" id="la" min="0.02" max="0.98" step="0.01" value="0.30"></label></div>
+  <div><label>Output<select id="ot" class="gal"><option value="w">deflection \(w\)</option><option value="M">bending moment \(M\)</option></select></label></div>
+  <div><label>Output position \(x/L\)<output id="xo_o"></output><input type="range" id="xo" min="0.02" max="0.98" step="0.01" value="0.70"></label></div>
+  <div><label>Retained modes \(N\)<output id="Nm_o"></output><input type="range" id="Nm" min="1" max="8" step="1" value="1" data-dp="0"></label></div>
+  <div><label>Modal damping ratio \(\zeta\)<output id="ze_o"></output><input type="range" id="ze" min="0.005" max="0.2" step="0.005" value="0.02" data-dp="3"></label></div>
+  <div><label>Drive frequency \(\Omega/\omega_1\)<output id="W_o"></output><input type="range" id="lW" min="-1" max="1.7" step="any" value="-0.301"></label></div>
+</div>
+
+<div class="figs">
+  <div class="fig"><div class="ttl">Generalized forces \(Q_n\)</div>
+    <canvas id="cq" data-ar="0.62"></canvas>
+    <div class="cap"><span class="sw" style="background:#0072BD"></span>retained \((n\le N)\) &nbsp; <span class="sw" style="background:#c9c4b4"></span>discarded. Units: \(F\), or \(p_0L\) for the uniform load. A load placed at a node of mode \(n\) gives \(Q_n=0\), so that mode is never excited.</div></div>
+  <div class="fig"><div class="ttl" id="shT">Response along the span at the current \(\Omega\)</div>
+    <canvas id="cs" data-ar="0.62"></canvas>
+    <div class="cap"><span class="sw" style="background:#0072BD"></span>\(N\)-mode sum &nbsp; <span class="sw" style="background:#1b2a3a"></span>reference &nbsp; <span class="sw" style="background:#A2142F"></span>load (its length follows \(\cos\Omega t\)) &nbsp; ring: output point. Positive \(w\), \(p\) and sagging \(M\) are drawn upward.</div></div>
+</div>
+<div class="figbar"><button id="pz2">Pause</button><span class="sep"></span><button id="swp">Sweep \(\Omega\)</button><button id="j1">\(\Omega=\omega_1\)</button><button id="j2">\(\Omega=\omega_2\)</button><button id="j3">\(\Omega=\omega_3\)</button></div>
+<div class="figs">
+  <div class="fig"><div class="ttl">Frequency response at the output point</div>
+    <canvas id="cf" data-ar="0.62"></canvas>
+    <div class="cap"><span class="sw" style="background:#1b2a3a"></span>reference &nbsp; <span class="sw" style="background:#0072BD"></span>\(N\) modes &nbsp; <span class="sw" style="background:#D95319"></span>one mode (dashed, shown for \(N>1\)). Dotted verticals: \(\omega_n/\omega_1=n^2\). Dot: the current \(\Omega\). Units: \(FL^3/EI\) (deflection) or \(FL\) (moment). For the uniform load replace \(F\) with \(p_0L\).</div></div>
+  <div class="fig"><div class="ttl">Truncation check</div><table class="ro" id="ro2"></table></div>
+</div>
+<div class="note"><b class="h">What to notice</b>
+<ol style="margin:4px 0 0 18px;padding:0">
+  <li>Point load and output both at midspan: one mode gives 98.55% of the exact static deflection \(FL^3/48EI\). The same single mode gives only 81.06% of the midspan moment \(FL/4\). Eight modes still give only 94.96%. Moment terms fall off like \(1/n^2\), deflection terms like \(1/n^4\).</li>
+  <li>With the defaults \((a=0.3L,\ x=0.7L)\) one mode <em>overshoots</em>: 109.25% of the exact static deflection. Two modes give 99.82%. Mode 2 enters with a negative sign and corrects the estimate.</li>
+  <li>Choose the uniform load: \(Q_2=Q_4=\dots=0\). A symmetric load cannot drive antisymmetric modes, and \(N=2\) adds nothing over \(N=1\).</li>
+  <li>Below \(\omega_1\) the one-mode curve tracks the reference closely. Near \(\omega_2\) it misses a whole resonance unless \(Q_2\) or \(\phi_2(x)\) is zero. This is slide 12's condition: the load and the output must both couple strongly to mode 1.</li>
+</ol></div>
+
+<h2>3. Check yourself</h2>
+<details><summary>Why do clamped&ndash;clamped and free&ndash;free beams have the same nonzero \(\beta_nL\)?</summary>
+<p>Let \(\phi\) be a clamped&ndash;clamped mode and set \(\psi=\phi''\). Then \(\psi''=\phi''''=\beta^4\phi\) and \(\psi'''=\beta^4\phi'\). Both vanish at clamped ends, so \(\psi\) satisfies the free&ndash;free conditions with the same \(\beta\). The argument also runs backwards. Both frequency equations reduce to \(\cos\beta L\cosh\beta L=1\). The same argument maps clamped&ndash;pinned onto free&ndash;pinned, so both satisfy \(\tan\beta L=\tanh\beta L\). On this page the curvature of the clamped&ndash;clamped mode and the free&ndash;free mode agree to about \(10^{-15}\).</p></details>
+<details><summary>Free&ndash;free beams have two rigid-body modes at \(\omega=0\). What does orthogonality to them say about the elastic modes?</summary>
+<p>The rigid modes are a translation \(\phi=1\) and a rotation \(\phi=x\). Mass orthogonality gives \(\int_0^L\rho A\,\phi_n\,dx=0\) and \(\int_0^L\rho A\,x\,\phi_n\,dx=0\). An elastic mode carries no net momentum and no net angular momentum, so a free beam vibrating in its elastic modes does not drift. A pinned&ndash;free beam has only the rotation about the pin. For the six elastic modes computed here both integrals are below \(10^{-9}\), which is the quadrature error.</p></details>
+<details><summary>How can one mode overestimate the static deflection by 9%?</summary>
+<p>The mode-2 term is \(\sin(2\pi a/L)\sin(2\pi x/L)\,F/k_2\). For \(a=0.3L\) and \(x=0.7L\) the two sines are \(0.951\) and \(-0.951\), so the term is negative. Truncating at \(N=1\) drops a negative correction. Modal sums are not monotone in \(N\) unless every term has the same sign, as it does when the load and the output are at the same point.</p></details>
+<details><summary>Why does the bending moment need more modes than the deflection?</summary>
+<p>\(M=-EIw''\) multiplies each modal term by \((n\pi/L)^2\), and statically \(Q_n/k_n\propto n^{-4}\). The deflection terms therefore fall like \(n^{-4}\) and the moment terms only like \(n^{-2}\). Under a point load the exact moment diagram has a kink, and a sum of smooth sines converges slowly at a kink. Stress follows the moment, so a model that is accurate for deflection can still be poor for stress. This is slide 14's point that convergence is judged for the selected output.</p></details>
+<details><summary>The determinant is divided by \(\cosh\beta L\). Does that change the frequencies?</summary>
+<p>No. \(\cosh\beta L>0\), so the zeros are unchanged. Without the division, entries of \(\vb{B}\) grow like \(e^{\beta L}\) and the curve becomes unreadable after the first root. The division is a scaling choice, not physics.</p></details>
+
+<footer>Slides: Lecture 24 (field \(w(x,t)\), Euler&ndash;Bernoulli kinematics, beam PDE, separation of variables, boundary conditions, simply supported modes, PDE to modal ODEs, orthogonality, modal projection, one-mode and multimode response, verification checks). The frequency equations for end conditions other than pinned&ndash;pinned are built here from the conditions on slide 7; the slides do not list them. Nondimensional units: \(\xi=x/L\), frequencies in \(\sqrt{EI/(\rho AL^4)}\), mode shapes normalized to \(\int_0^1\phi_n^2\,d\xi=1\) in section 1. Labels inside the plots are plain text; the equations on the page are typeset with KaTeX.</footer>
+</div>
+
+<script src="assets/katex/katex.min.js"></script>
+<script src="assets/katex/auto-render.min.js"></script>
+<script src="assets/math.js"></script>
+<script src="assets/phonebar.js"></script>
+<script src="assets/layout.js"></script>
+<script src="assets/lib.js"></script>
+<script>
+(function(){
+const {ro,TeX,C,Plot,bind,val,chk,setVal,f3,TAU,animate}=TUT;
+const S=id=>document.getElementById(id);
+const GREY='#b9b5a8', PALE='#c9c4b4';
+
+/* ---------- beam core: nondimensional, xi = x/L, lam = beta L ---------- */
+const BM={
+basis(l,xi,k){const s=Math.sin(l*xi),c=Math.cos(l*xi),sh=Math.sinh(l*xi),ch=Math.cosh(l*xi);
+  return [[s,c,sh,ch],[c,-s,ch,sh],[-s,-c,sh,ch],[-c,s,ch,sh]][k];},       // d^k/dxi^k divided by lam^k
+BC:{C:[0,1],P:[0,2],F:[2,3]},                                                  // derivative orders set to zero (slide 7)
+mat(l,a,b){return [...BM.BC[a].map(k=>BM.basis(l,0,k)),...BM.BC[b].map(k=>BM.basis(l,1,k))];},
+det(m){const a=m.map(r=>r.slice());let d=1;const n=a.length;
+  for(let i=0;i<n;i++){let p=i;for(let r=i+1;r<n;r++)if(Math.abs(a[r][i])>Math.abs(a[p][i]))p=r;
+    if(Math.abs(a[p][i])<1e-300)return 0;if(p!==i){const t=a[p];a[p]=a[i];a[i]=t;d=-d;}d*=a[i][i];
+    for(let r=i+1;r<n;r++){const f=a[r][i]/a[i][i];for(let c=i;c<n;c++)a[r][c]-=f*a[i][c];}}return d;},
+g(l,a,b){return BM.det(BM.mat(l,a,b))/Math.cosh(l);},
+roots(a,b,n,lmax){const out=[];let x=0.05,fx=BM.g(x,a,b);
+  while(out.length<n&&x<lmax){const y=x+0.01,fy=BM.g(y,a,b);
+    if(fx*fy<0){let lo=x,hi=y,flo=fx;for(let k=0;k<80;k++){const m=(lo+hi)/2,fm=BM.g(m,a,b);if(flo*fm<=0)hi=m;else{lo=m;flo=fm;}}out.push((lo+hi)/2);}
+    x=y;fx=fy;}return out;},
+coef(l,a,b){const B=BM.mat(l,a,b);let best=null,bn=-1;                          // null vector from cofactors
+  for(let i=0;i<4;i++){const c=[0,1,2,3].map(j=>{const mi=B.filter((_,r)=>r!==i).map(r=>r.filter((_,cc)=>cc!==j));return ((i+j)%2?-1:1)*BM.det(mi);});
+    const nn=Math.hypot(...c);if(nn>bn){bn=nn;best=c;}}
+  return best.map(v=>v/bn);},
+ev(c,l,xi,k){const b=BM.basis(l,xi,k);return Math.pow(l,k)*(c[0]*b[0]+c[1]*b[1]+c[2]*b[2]+c[3]*b[3]);},
+mode(a,b,l,n){const c=BM.coef(l,a,b),x=[],p=[],p2=[];
+  for(let i=0;i<=n;i++){const xi=i/n;x.push(xi);p.push(BM.ev(c,l,xi,0));p2.push(BM.ev(c,l,xi,2));}
+  const s=Math.sqrt(BM.simp(p.map(v=>v*v),1/n));let im=0;p.forEach((v,i)=>{if(Math.abs(v)>Math.abs(p[im]))im=i;});
+  const sg=(p[im]<0?-1:1)/s;return {x,p:p.map(v=>v*sg),p2:p2.map(v=>v*sg),lam:l};},
+simp(y,h){const n=y.length-1;let s=y[0]+y[n];for(let i=1;i<n;i++)s+=(i%2?4:2)*y[i];return s*h/3;},
+};
+/* ---------- simply supported beam: L = EI = rhoA = 1, omega_n = (n pi)^2 ---------- */
+const SS={
+Q(n,type,a){return type==='u'?(1-Math.cos(n*Math.PI))/(n*Math.PI):Math.sin(n*Math.PI*a);},
+out(n,x,o){const s=Math.sin(n*Math.PI*x);return o==='M'?Math.pow(n*Math.PI,2)*s:s;},     // M = -EI w''
+H(n,W,z){const m=0.5,w=Math.pow(n*Math.PI,2),k=m*w*w,c=2*z*m*w,re=k-m*W*W,im=c*W,d=re*re+im*im;return [re/d,-im/d];},
+sum(N,x,W,z,type,a,o){let re=0,im=0;for(let n=1;n<=N;n++){const f=SS.Q(n,type,a)*SS.out(n,x,o);if(f===0)continue;const h=SS.H(n,W,z);re+=f*h[0];im+=f*h[1];}return [re,im];},
+exact(x,type,a,o){
+  if(type==='u') return o==='M'? x*(1-x)/2 : x*(1-2*x*x+x*x*x)/24;
+  const b=1-a;
+  if(o==='M') return x<=a? b*x : a*(1-x);
+  return x<=a? b*x*(1-b*b-x*x)/6 : a*(1-x)*(1-a*a-(1-x)*(1-x))/6;},
+ref(x,W,z,type,a,o,K){let re=SS.exact(x,type,a,o),im=0;                         // exact static + dynamic corrections
+  for(let n=1;n<=K;n++){const f=SS.Q(n,type,a)*SS.out(n,x,o);if(f===0)continue;const h=SS.H(n,W,z),h0=SS.H(n,0,z);re+=f*(h[0]-h0[0]);im+=f*h[1];}
+  return [re,im];},
+};
+
+/* ---------- precomputed spectra ---------- */
+const NAME={C:'clamped',P:'pinned',F:'free'};
+const ROOTS={};['C','P','F'].forEach(a=>['C','P','F'].forEach(b=>{ROOTS[a+b]=BM.roots(a,b,6,22);}));
+const LADDER=[['CC','clamped–clamped',0],['CP','clamped–pinned',0],['PP','pinned–pinned',0],['CF','clamped–free',0],['PF','pinned–free',1],['FF','free–free',2]];
+const canon=k=>({PC:'CP',FC:'CF',FP:'PF'}[k]||k);
+const RIGID={FF:2,PF:1,FP:1};
+const EQN={CC:'\\cos\\beta L\\cosh\\beta L=1',FF:'\\cos\\beta L\\cosh\\beta L=1',CF:'\\cos\\beta L\\cosh\\beta L=-1',FC:'\\cos\\beta L\\cosh\\beta L=-1',
+  PP:'\\sin\\beta L=0',CP:'\\tan\\beta L=\\tanh\\beta L',PC:'\\tan\\beta L=\\tanh\\beta L',PF:'\\tan\\beta L=\\tanh\\beta L',FP:'\\tan\\beta L=\\tanh\\beta L'};
+const COND={C:"w=w'=0",P:"w=w''=0",F:"w''=w'''=0"};
+const NS=1000, cache={};
+function getMode(key,n){const k=key+n;if(!cache[k])cache[k]=BM.mode(key[0],key[1],ROOTS[key][n-1],NS);return cache[k];}
+function nodesOf(p){const out=[],n=p.length-1,tol=1e-6*Math.max(...p.map(Math.abs));
+  let pi=-1;for(let i=Math.round(n*0.01);i<=Math.round(n*0.99);i++){if(Math.abs(p[i])<tol)continue;
+    if(pi>=0&&(p[i]>0)!==(p[pi]>0)){const t=p[pi]/(p[pi]-p[i]);out.push((pi+t*(i-pi))/n);}pi=i;}return out;}
+
+/* ---------- plots ---------- */
+const pg=new Plot(S('cg'),{pad:[44,12,12,38],xmin:0,xmax:21,ymin:-1,ymax:1});
+const pl=new Plot(S('cl'),{pad:[112,12,12,38],xmin:-0.8,xmax:21,ymin:-0.5,ymax:5.5});
+const pm=new Plot(S('cm'),{pad:[12,12,10,12],xmin:-0.1,xmax:1.1,ymin:-1.45,ymax:1.45});
+const po=new Plot(S('co'),{pad:[44,12,12,38],xmin:0,xmax:1,ymin:-1,ymax:1});
+const pq=new Plot(S('cq'),{pad:[44,12,12,38],xmin:0.3,xmax:8.7,ymin:-1,ymax:1});
+const ps=new Plot(S('cs'),{pad:[12,12,10,12],xmin:-0.08,xmax:1.08,ymin:-1.5,ymax:1.5});
+const pf=new Plot(S('cf'),{pad:[52,12,12,38],xmin:0.1,xmax:50,ymin:1e-6,ymax:1,xlog:true,ylog:true});
+
+let ph=0;            // animation phase, shared by both animated figures
+function st1(){const key=S('le').value+S('re').value;const R=ROOTS[key];
+  const n=Math.min(val('nm'),R.length),m=Math.min(val('mm'),R.length);return {key,R,n,m};}
+
+function drawG(s){
+  let mx=0;const xs=[],ys=[];for(let l=0;l<=21.0001;l+=0.02){const v=BM.g(l,s.key[0],s.key[1]);xs.push(l);ys.push(v);mx=Math.max(mx,Math.abs(v));}
+  mx=mx>0?mx*1.12:1;pg.set({ymin:-mx,ymax:mx});pg.begin();
+  pg.axes({xlabel:'βL',ylabel:'det B / cosh βL',zero:true});
+  pg.line(xs,ys,C.blue,2);
+  s.R.forEach((l,i)=>pg.dot(l,0,C.red,4));
+  pg.ring(s.R[s.n-1],0,C.red,8);
+  pg.text('β'+sub(s.n)+'L = '+s.R[s.n-1].toFixed(4),s.R[s.n-1],0,C.ink,{dy:-16,align:'center',bold:true});
+}
+function sub(n){return String(n).split('').map(c=>'₀₁₂₃₄₅₆₇₈₉'[+c]).join('');}
+function drawL(s){
+  pl.begin();pl.axes({xlabel:'βL   (ω ∝ (βL)²)',yticks:[],grid:false,xticks:[0,5,10,15,20]});
+  const g=pl.g;g.save();g.strokeStyle=C.axis;g.lineWidth=1;g.setLineDash([2,3]);
+  for(let x=0;x<=21;x+=Math.PI){g.beginPath();g.moveTo(pl.X(x),pl.t);g.lineTo(pl.X(x),pl.t+pl.ph);g.stroke();}g.restore();
+  const cur=canon(s.key);
+  LADDER.forEach((r,i)=>{const y=5-i,on=(r[0]===cur);const R=ROOTS[r[0]];
+    pl.line([0,21],[y,y],on?C.copper:PALE,on?1.6:1);
+    pl.text(r[1],pl.x0,y,on?C.ink:C.muted,{align:'right',dx:-8,bold:on,size:12});
+    if(r[2]){pl.ring(0,y,on?C.blue:GREY,6);if(r[2]>1)pl.text('×2',0,y,on?C.blue:GREY,{dx:10,dy:-9,size:11});}
+    R.forEach((l,j)=>{pl.dot(l,y,on?C.blue:GREY,on?5:4);if(on&&j===s.n-1)pl.ring(l,y,C.red,9);});
+  });
+}
+function drawSupport(P,x,type,dir){ // dir = -1 left end, +1 right end
+  const g=P.g;g.save();g.strokeStyle=C.ink;g.lineWidth=2;
+  if(type==='C'){const X=P.X(x),y0=P.Y(0.75),y1=P.Y(-0.75);g.beginPath();g.moveTo(X,y0);g.lineTo(X,y1);g.stroke();
+    g.lineWidth=1.2;for(let k=0;k<=6;k++){const y=y0+(y1-y0)*k/6;g.beginPath();g.moveTo(X,y);g.lineTo(X+dir*9,y+9);g.stroke();}}
+  else if(type==='P'){const X=P.X(x),Y=P.Y(0);g.beginPath();g.moveTo(X,Y);g.lineTo(X-9,Y+16);g.lineTo(X+9,Y+16);g.closePath();g.stroke();
+    g.beginPath();g.moveTo(X-14,Y+19);g.lineTo(X+14,Y+19);g.stroke();}
+  g.restore();
+}
+function drawM(s){
+  const md=getMode(s.key,s.n),cs=Math.cos(ph);
+  const mx=Math.max(...md.p.map(Math.abs)),m2=Math.max(...md.p2.map(Math.abs))||1;
+  const xs=[],ys=[],e1=[],e2=[],cv=[];
+  for(let i=0;i<=NS;i+=5){xs.push(md.x[i]);const v=md.p[i]/mx;ys.push(v*cs);e1.push(v);e2.push(-v);cv.push(md.p2[i]/m2*cs);}
+  pm.begin();
+  pm.line([0,1],[0,0],C.grid,1);
+  pm.line(xs,e1,GREY,1.2,[5,4]);pm.line(xs,e2,GREY,1.2,[5,4]);
+  if(chk('curv'))pm.line(xs,cv,C.plum,1.8,[7,4]);
+  pm.line(xs,ys,C.blue,4);
+  drawSupport(pm,0,s.key[0],-1);drawSupport(pm,1,s.key[1],1);
+  nodesOf(md.p).forEach(x=>pm.dot(x,0,C.red,4));
+  pm.text('mode '+s.n+'   '+NAME[s.key[0]]+'–'+NAME[s.key[1]],0.5,1.3,C.ink,{align:'center',bold:true,size:12});
+}
+function drawO(s){
+  const a=getMode(s.key,s.m),b=getMode(s.key,s.n),k=S('wt').value==='k';
+  const fa=k?a.p2:a.p,fb=k?b.p2:b.p,pr=fa.map((v,i)=>v*fb[i]);
+  const I=BM.simp(pr,1/NS)/Math.sqrt(BM.simp(fa.map(v=>v*v),1/NS)*BM.simp(fb.map(v=>v*v),1/NS));
+  let mx=0;pr.forEach(v=>mx=Math.max(mx,Math.abs(v)));mx=(mx||1)*1.15;
+  po.set({ymin:-mx,ymax:mx});po.begin();po.axes({xlabel:'x / L',ylabel:k?'φ″ₘ φ″ₙ':'φₘ φₙ',zero:true,yfmt:v=>Math.abs(v)>=1e4?v.toExponential(0):TUT.fmt(v)});
+  const xs=[],pp=[],nn=[];for(let i=0;i<=NS;i+=2){xs.push(a.x[i]);pp.push(Math.max(pr[i],0));nn.push(Math.min(pr[i],0));}
+  po.fill([0,...xs,1],[0,...pp,0],C.blue,0.35);po.fill([0,...xs,1],[0,...nn,0],C.orange,0.35);
+  po.line(xs,xs.map((_,j)=>pp[j]+nn[j]),C.ink,1.2);
+  po.text('m = '+s.m+', n = '+s.n+':  normalized ∫ = '+f3(I),0.02,mx*0.86,C.ink,{bold:true,size:12});
+  return I;
+}
+function ro1(s,Iw){
+  const md=getMode(s.key,s.n),l=md.lam,R=s.R;
+  const ray=BM.simp(md.p2.map(v=>v*v),1/NS)/BM.simp(md.p.map(v=>v*v),1/NS);
+  const a=getMode(s.key,s.m),b=md;
+  const Im=BM.simp(a.p.map((v,i)=>v*b.p[i]),1/NS);
+  const Ik=BM.simp(a.p2.map((v,i)=>v*b.p2[i]),1/NS)/Math.sqrt(BM.simp(a.p2.map(v=>v*v),1/NS)*BM.simp(b.p2.map(v=>v*v),1/NS));
+  const rg=RIGID[s.key]||0;
+  ro(S('ro1'),[
+    ['End conditions',TeX(COND[s.key[0]])+' at \\(x=0\\); '+TeX(COND[s.key[1]])+' at \\(x=L\\)'],
+    ['Frequency equation reduces to',TeX(EQN[s.key])],
+    [TeX('\\beta_nL'),l.toFixed(4)],
+    [TeX('\\omega_n\\,/\\sqrt{EI/\\rho AL^4}=(\\beta_nL)^2'),(l*l).toFixed(3)],
+    [TeX('\\omega_n/\\omega_1'),(l*l/(R[0]*R[0])).toFixed(3)],
+    ['Interior nodes',String(nodesOf(md.p).length)],
+    ['Rigid-body modes',rg===0?'none':rg===1?'1 (rotation about the pin)':'2 (translation, rotation)'],
+    ['Rayleigh check '+TeX('\\int\\phi_n^{\\prime\\prime2}d\\xi\\big/\\int\\phi_n^2d\\xi'),ray.toFixed(3)+' vs '+TeX('(\\beta_nL)^4=')+Math.pow(l,4).toFixed(3)],
+    [TeX('\\int_0^1\\phi_m\\phi_n\\,d\\xi')+' (mass-normalized)',f3(Im)],
+    [TeX('\\int\\phi_m^{\\prime\\prime}\\phi_n^{\\prime\\prime}')+' (normalized)',f3(Ik)],
+  ]);
+}
+
+/* ---------- section 2 ---------- */
+const K=200, NX=120, NF=360;
+let shp=null;   // cached complex shapes
+function st2(){return {type:S('lt').value,a:val('la'),o:S('ot').value,x:val('xo'),N:val('Nm'),z:val('ze'),r:Math.pow(10,val('lW'))};}
+const W1=Math.PI*Math.PI;
+function drawQ(t){
+  const qs=[];let mx=0;for(let n=1;n<=8;n++){const q=SS.Q(n,t.type,t.a);qs.push(q);mx=Math.max(mx,Math.abs(q));}
+  mx=Math.max(mx,0.1)*1.15;pq.set({ymin:-mx,ymax:mx});pq.begin();
+  pq.axes({xlabel:'mode n',ylabel:t.type==='u'?'Qₙ / p₀L':'Qₙ / F',zero:true,xticks:[1,2,3,4,5,6,7,8]});
+  qs.forEach((q,i)=>{const n=i+1;if(Math.abs(q)<1e-12){pq.text('0',n,0,C.muted,{align:'center',dy:-9,size:11});return;}
+    pq.fill([n-0.32,n+0.32,n+0.32,n-0.32],[0,0,q,q],n<=t.N?C.blue:PALE,n<=t.N?0.85:0.9);});
+}
+function computeShapes(t){
+  const W=t.r*W1,xs=[],wn=[],wr=[];
+  for(let i=0;i<=NX;i++){const x=i/NX;xs.push(x);wn.push(SS.sum(t.N,x,W,t.z,t.type,t.a,t.o));wr.push(SS.ref(x,W,t.z,t.type,t.a,t.o,K));}
+  let mx=0;wr.forEach(c=>mx=Math.max(mx,Math.hypot(c[0],c[1])));wn.forEach(c=>mx=Math.max(mx,Math.hypot(c[0],c[1])));
+  shp={xs,wn,wr,mx:mx||1,t};
+}
+function drawS(){
+  if(!shp)return;const t=shp.t,c=Math.cos(ph),s=Math.sin(ph),sc=1/shp.mx;
+  // Re{W e^{i ph}} = Wr cos(ph) - Wi sin(ph)
+  const yn=shp.wn.map(w=>(w[0]*c-w[1]*s)*sc),yr=shp.wr.map(w=>(w[0]*c-w[1]*s)*sc);
+  ps.begin();ps.line([0,1],[0,0],C.grid,1);
+  ps.line(shp.xs,yr,C.ink,1.8);ps.line(shp.xs,yn,C.blue,3.2);
+  drawSupport(ps,0,'P',-1);drawSupport(ps,1,'P',1);
+  // load drawn with length following cos(Omega t), positive upward, placed below the axis
+  const yAt=x=>yn[Math.round(x*NX)];
+  if(t.type==='p'){const y=yAt(t.a);ps.arrow(t.a,y-0.55*c,t.a,y,C.red,2.4);}
+  else{for(let k=1;k<=9;k++){const x=k/10,y=yAt(x);ps.arrow(x,y-0.4*c,x,y,C.red,1.6,7);}}
+  const ix=Math.round(t.x*NX);ps.ring(t.x,yr[ix],C.red,7);
+  ps.text((t.o==='M'?'M':'w')+'  (peak scaled to 1)',0.5,1.38,C.muted,{align:'center',size:11});
+}
+function drawF(t){
+  const fr=[],yr=[],yn=[],y1=[];let lo=Infinity,hi=0;
+  for(let i=0;i<=NF;i++){const r=Math.pow(10,-1+i*(Math.log10(50)+1)/NF),W=r*W1;fr.push(r);
+    const R=SS.ref(t.x,W,t.z,t.type,t.a,t.o,K),A=SS.sum(t.N,t.x,W,t.z,t.type,t.a,t.o),B=SS.sum(1,t.x,W,t.z,t.type,t.a,t.o);
+    const vr=Math.hypot(...R),vn=Math.hypot(...A),v1=Math.hypot(...B);yr.push(vr);yn.push(vn);y1.push(v1);
+    [vr,vn].forEach(v=>{if(v>0&&isFinite(v)){lo=Math.min(lo,v);hi=Math.max(hi,v);}});}
+  const ymax=Math.pow(10,Math.ceil(Math.log10(hi)+0.05)),ymin=Math.max(Math.pow(10,Math.floor(Math.log10(lo))),ymax*1e-6);
+  pf.set({ymin,ymax});pf.begin();
+  pf.axes({xlabel:'Ω / ω₁',ylabel:t.o==='M'?(t.type==='u'?'|M| / p₀L²':'|M| / FL'):(t.type==='u'?'|w| · EI / p₀L⁴':'|w| · EI / FL³')});
+  for(let n=1;n*n<=50;n++)pf.line([n*n,n*n],[ymin,ymax],PALE,1,[2,3]);
+  pf.line(fr,yr,C.ink,1.8);
+  if(t.N>1)pf.line(fr,y1,C.orange,1.6,[6,4]);
+  pf.line(fr,yn,C.blue,2.2);
+  const W=t.r*W1,R=SS.ref(t.x,W,t.z,t.type,t.a,t.o,K),A=SS.sum(t.N,t.x,W,t.z,t.type,t.a,t.o);
+  pf.dot(t.r,Math.hypot(...A),C.blue,5,'#fff');pf.dot(t.r,Math.hypot(...R),C.red,4);
+  return {R,A};
+}
+function ro2(t,F){
+  const ex=SS.exact(t.x,t.type,t.a,t.o),st=SS.sum(t.N,t.x,0,t.z,t.type,t.a,t.o)[0],s1=SS.sum(1,t.x,0,t.z,t.type,t.a,t.o)[0];
+  const pct=v=>Math.abs(ex)<1e-12?'—':(100*v/ex).toFixed(2)+'%';
+  const mR=Math.hypot(...F.R),mA=Math.hypot(...F.A);
+  const u=t.o==='M'?(t.type==='u'?'p_0L^2':'FL'):(t.type==='u'?'p_0L^4/EI':'FL^3/EI');
+  const sym=t.o==='M'?'M':'w';
+  ro(S('ro2'),[
+    ['Exact static '+TeX(sym+'(x)'),ex.toPrecision(5)+' '+TeX(u)],
+    ['Static, '+TeX('N='+t.N)+' modes',st.toPrecision(5)+' ('+pct(st)+' of exact)'],
+    ['Static, one mode',s1.toPrecision(5)+' ('+pct(s1)+')'],
+    [TeX('\\Omega/\\omega_1'),t.r.toPrecision(3)],
+    [TeX('|'+sym+'_\\text{ref}|')+' at this '+TeX('\\Omega'),mR.toPrecision(4)],
+    [TeX('|'+sym+'_N|')+' at this '+TeX('\\Omega'),mA.toPrecision(4)+(mR>0?' (error '+(100*Math.hypot(F.A[0]-F.R[0],F.A[1]-F.R[1])/mR).toFixed(2)+'%)':'')],
+    [TeX('Q_1,\\dots,Q_4'),[1,2,3,4].map(n=>f3(SS.Q(n,t.type,t.a))).join(', ')],
+  ]);
+}
+
+/* ---------- wiring ---------- */
+function draw1(){S('nm_o').textContent=val('nm');S('mm_o').textContent=val('mm');const s=st1();drawG(s);drawL(s);drawM(s);drawO(s);ro1(s);}
+function draw2(){S('Nm_o').textContent=val('Nm');const t=st2();S('W_o').textContent=t.r.toPrecision(3);S('la').disabled=(t.type==='u');
+  if(S('shT').dataset.o!==t.o){S('shT').dataset.o=t.o;S('shT').innerHTML=t.o==='M'?'Bending moment along the span at the current \\(\\Omega\\)':'Deflected shape at the current \\(\\Omega\\)';if(window.TUTmath)TUTmath(S('shT'));}
+  drawQ(t);computeShapes(t);drawS();const F=drawF(t);ro2(t,F);}
+function drawAll(){draw1();draw2();}
+bind(['nm','mm'],draw1);
+['le','re','curv','wt'].forEach(id=>S(id).addEventListener('change',draw1));
+bind(['la','xo','Nm','ze','lW'],draw2);
+['lt','ot'].forEach(id=>S(id).addEventListener('change',draw2));
+let sweepOn=false;
+S('swp').onclick=()=>{sweepOn=!sweepOn;S('swp').textContent=sweepOn?'Stop sweep':'Sweep Ω';if(sweepOn&&ctl.paused){ctl.paused=false;pzTxt();}};
+[1,2,3].forEach(n=>S('j'+n).onclick=()=>{setVal('lW',Math.log10(n*n));draw2();});
+const ctl=animate(dt=>{
+  ph=(ph+dt*TAU/1.6)%TAU;drawM(st1());
+  if(sweepOn){let u=val('lW')+dt*0.15;if(u>1.7)u=-1;setVal('lW',u);draw2();}else drawS();
+});
+function pzTxt(){const t=ctl.paused?'Play':'Pause';S('pz1').textContent=t;S('pz2').textContent=t;}
+S('pz1').onclick=S('pz2').onclick=()=>{ctl.paused=!ctl.paused;pzTxt();};
+pzTxt();
+window.addEventListener('resize',drawAll);
+drawAll();
+})();
+</script>
+</body>
+</html>

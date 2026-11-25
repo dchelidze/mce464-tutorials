@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tutorial 3: Roots in the s-Plane</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<link rel="stylesheet" href="assets/style.css">
+<style>/* phone width (sidebar stacked): a wide display equation scrolls inside its own box instead of widening the page; the padding keeps tall delimiters unclipped */@media (max-width:980px){.katex-display{overflow-x:auto;overflow-y:hidden;padding:.45em 0}}</style>
+<style>/* figure-specific controls sit above their figure */
+.figbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:12px 0 2px;padding:8px 12px;background:var(--card);border:1px solid var(--rule);border-radius:10px}
+.figbar button{margin:0}
+.figbar label{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:14px;font-weight:600}
+.figbar label.chk{font-weight:500}
+.figbar .sep{width:1px;align-self:stretch;background:var(--rule);margin:0 4px}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <nav class="tn"><a href="index.html">All tutorials</a><a href="T02_phase_portraits_tr_det_L05-19.html">&larr; Tutorial 2</a><a href="T04_phasor_forced_response_L11-12.html">Next: Tutorial 4 &rarr;</a></nav>
+  <div class="kicker">MCE 464 &middot; Tutorial 3 &middot; Lectures 5&ndash;7</div>
+  <h1>Roots in the s-Plane</h1>
+  <p class="lede">Where the characteristic roots sit decides everything about free decay. Move one slider and watch the roots travel, the envelope change and the regime switch. Then measure the damping back from a noisy decay record.</p>
+</div></header>
+<div class="wrap">
+
+<h2>1. The picture in one line</h2>
+<p>For \(m\ddot x + c\dot x + kx = 0\) the trial solution \(e^{st}\) gives \(s^2 + 2\zeta\omega_n s + \omega_n^2 = 0\). Treat \(s\) as a point in the complex plane:</p>
+<div class="eqb">$$ s_{1,2} = -\zeta\omega_n \pm \omega_n\sqrt{\zeta^2-1} $$</div>
+<ul>
+  <li><b>Real part</b> \(-\zeta\omega_n\) is the decay rate: how far left of the imaginary axis.</li>
+  <li><b>Imaginary part</b> \(\pm\omega_d\) is the oscillation frequency: how far above and below the real axis.</li>
+  <li><b>Distance from the origin</b> is exactly \(\omega_n\) while the roots are complex. Damping slides the roots along a circle.</li>
+  <li><b>Angle from the negative real axis</b> is \(\theta=\arccos\zeta\). The damping ratio is a direction, not a length.</li>
+</ul>
+
+<div class="ctl">
+  <div><label>Damping ratio \(\zeta\)<output id="zeta_o"></output>
+    <input type="range" id="zeta" min="0" max="2.5" step="0.005" value="0.25" data-dp="3"></label></div>
+  <div>
+    <button id="play">Sweep &zeta;</button>
+    <button data-z="0.05">0.05</button><button data-z="0.25">0.25</button><button data-z="0.7071">0.707</button><button data-z="1">1</button><button data-z="2">2</button>
+  </div>
+  <div><label class="chk"><input type="checkbox" id="locus" checked> show full root locus</label>
+       <label class="chk"><input type="checkbox" id="env" checked> show envelope and 2% band</label></div>
+</div>
+
+<div class="figs">
+  <div class="fig"><div class="ttl">Complex plane \(s=\sigma+i\omega\)</div>
+    <canvas id="cs" data-ar="0.78"></canvas>
+    <div class="cap">Dashed circle: \(|s|=\omega_n=1\). Grey curves: the locus the roots trace as \(\zeta\) runs from 0 to 2.5.</div></div>
+  <div class="fig"><div class="ttl">Free response, \(x(0)=1,\ \dot x(0)=0\)</div>
+    <canvas id="ct" data-ar="0.78"></canvas>
+    <div class="cap">Time in units of \(1/\omega_n\). Dashed: envelope \(e^{-\zeta\omega_n t}/\sqrt{1-\zeta^2}\), which the response touches once every half period, at \(\omega_d t=\psi+k\pi\), just after each extremum. Dotted band: \(\pm 2\%\). Green line: the true 2% settling time, the last instant with \(|x|\ge 0.02\). Copper dotted line: the estimate \(4/|\mathrm{Re}\,s_{\rm slow}|\).</div></div>
+  <div class="fig"><div class="ttl">The mass itself</div>
+    <canvas id="cm" data-ar="0.78"></canvas>
+    <div class="cap">A mass, spring and damper released from \(x=1\) at rest. The red dot on the response plot follows the block, so you can see how each root position turns into motion.</div></div>
+</div>
+
+<div class="figs">
+  <div class="fig"><div class="ttl">Read-out</div>
+    <table class="ro" id="ro"></table></div>
+  <div class="fig"><div class="ttl">What to notice</div>
+    <ol style="margin:4px 0 0 18px;padding:0">
+      <li>\(\zeta=0\): roots sit on the imaginary axis. No decay, pure oscillation.</li>
+      <li>\(0<\zeta<1\): roots slide left along the circle. The frequency \(\omega_d=\omega_n\sin\theta\) is the height of the root, so it shrinks only slowly at first.</li>
+      <li>\(\zeta=1\): the roots collide on the negative real axis. This is the critical case, the fastest response without overshoot. It is not the fastest to settle: allowing an overshoot smaller than 2% gives the shortest true 2% settling time, about \(3.60/\omega_n\) at \(\zeta\approx0.78\), against \(5.83/\omega_n\) at \(\zeta=1\) (Section 3).</li>
+      <li>\(\zeta>1\): the roots split along the real axis with product \(\omega_n^2\). One runs far left (fast, dies quickly), the other creeps back toward the origin (slow). The slow root controls the settling time.</li>
+    </ol></div>
+</div>
+
+<h2>2. Why the circle? The product and sum of roots</h2>
+<p>The quadratic gives
+\(s_1 s_2=\omega_n^2\) and \(s_1+s_2=-2\zeta\omega_n\).
+For complex roots \(s_2=s_1^{*}\), so the product is \(|s_1|^2=\omega_n^2\): the roots stay on a circle of radius \(\omega_n\). Once real, the product still equals \(\omega_n^2\), so the geometric mean of the two roots is \(\omega_n\). The sum, twice the real part, is set by the damping alone.</p>
+<div class="note"><b class="h">Design reading</b>Faster settling means pushing the roots left. Less overshoot means pushing them toward the real axis. The choice \(\zeta\approx 0.707\) puts the roots on the \(45^\circ\) lines: the response overshoots by about \(4.3\%\) and settles quickly. The same plane returns in Lecture 19, where the roots become the poles of the transfer function.</div>
+
+<h2>3. Settling time: the true value and the envelope estimate</h2>
+<p>The rule \(t_s\approx 4/|\mathrm{Re}\,s|\) assumes the response is a single exponential \(e^{-\sigma t}\) with unit coefficient, so it reaches 2% when \(e^{-\sigma t}=0.02\), that is at \(\sigma t=\ln 50=3.91\approx4\). The true 2% settling time is the last instant at which \(|x(t)|\ge0.02\). For the release \(x(0)=1,\ \dot x(0)=0\) it is computed here directly from the response.</p>
+<ul>
+  <li><b>Critical damping.</b> \(x=(1+\omega_n t)e^{-\omega_n t}\). Solving \((1+\tau)e^{-\tau}=0.02\) gives \(t_s=5.834/\omega_n\), not \(4/\omega_n\). The factor \((1+\tau)\) is what the estimate leaves out.</li>
+  <li><b>Underdamped.</b> \(x=\dfrac{e^{-\zeta\omega_n t}}{\sqrt{1-\zeta^2}}\cos(\omega_d t-\psi)\) with \(\tan\psi=\zeta/\sqrt{1-\zeta^2}\). The response touches this envelope once every half period, just after each extremum. The true \(t_s\) is set by the last half-cycle that still pokes outside the band.</li>
+  <li><b>Overdamped.</b> Two exponentials. The slow one dominates late, so \(4/|s_{\rm slow}|\) is close for large \(\zeta\), but its coefficient is not 1.</li>
+</ul>
+
+<div class="figs">
+  <div class="fig" style="flex:2 1 520px"><div class="ttl">2% settling time against \(\zeta\), \(x(0)=1,\ \dot x(0)=0\)</div>
+    <canvas id="cst" data-ar="0.58"></canvas>
+    <div class="cap">Blue: true settling time from \(x(t)\). Orange dashed: \(4/\zeta\) for \(\zeta<1\) and \(4/\bigl(\zeta-\sqrt{\zeta^2-1}\bigr)\) for \(\zeta>1\). Red dot: the current \(\zeta\) of Section 1. Curves leave the top of the frame for \(\zeta\lesssim0.17\). <span id="stmin"></span></div></div>
+  <div class="fig"><div class="ttl">Why a sawtooth</div>
+    <p style="margin:4px 0">For \(\zeta\lesssim0.8\) the true curve jumps. Each tooth is one extremum of \(x(t)\). As \(\zeta\) grows, that extremum shrinks until it slips inside the \(\pm2\%\) band. At that instant \(t_s\) drops by up to half a damped period, to the moment just after the previous extremum when the response re-enters the band.</p>
+    <p style="margin:4px 0">The envelope estimate is smooth because it tracks only the decay rate. It ignores where the oscillation is when the envelope crosses 2%, and it drops the factor \(1/\sqrt{1-\zeta^2}\). So it cannot see the teeth.</p>
+    <p style="margin:4px 0">The smallest true value sits where the first undershoot, \(e^{-\pi\zeta/\sqrt{1-\zeta^2}}\), equals 2%: \(\zeta^*=0.7797\). Just above \(\zeta^*\) the response enters the band on its first descent and never leaves, \(t_s\approx3.60/\omega_n\). Just below, the undershoot at \(t=\pi/\omega_d\) still counts and \(t_s\approx5.03/\omega_n\). Critical damping is the fastest response <em>without</em> overshoot, not the fastest to settle.</p></div>
+</div>
+
+<h2>4. Logarithmic decrement from a measured free decay</h2>
+<p>Lecture 7 turns the free decay around: measure \(x(t)\), read the damping. Successive positive peaks of an underdamped free decay are one damped period \(T_d=2\pi/\omega_d\) apart, and the cosine factor is the same at each, so their ratio is exactly</p>
+<div class="eqb">$$ \frac{x_k}{x_{k+1}}=e^{\zeta\omega_n T_d}, \qquad \delta=\ln\frac{x_k}{x_{k+1}}=\frac{2\pi\zeta}{\sqrt{1-\zeta^2}}=\frac1n\ln\frac{x_0}{x_n}, \qquad \zeta=\frac{\delta}{\sqrt{4\pi^2+\delta^2}} $$</div>
+<p>For small damping \(\zeta\approx\delta/(2\pi)\). That approximation overestimates \(\zeta\) by the factor \(1/\sqrt{1-\zeta^2}\). Here the release from \(x(0)=1\) at rest is sampled every \(\Delta t=0.2/\omega_n\) (about 31 samples per period) and Gaussian noise of standard deviation \(\sigma\) is added. A sample counts as a peak if it is positive and the largest within \(\pm0.7\) of a nominal period \(2\pi/\omega_n\). Peaks are found from the noisy samples only, as you would from a measured record.</p>
+
+<div class="ctl" data-title="Logarithmic decrement">
+  <div><label>True damping ratio \(\zeta\)<output id="lz_o"></output>
+    <input type="range" id="lz" min="0.01" max="0.4" step="0.005" value="0.05" data-dp="3"></label></div>
+  <div><label>Noise \(\sigma\) (fraction of \(x_0\))<output id="ls_o"></output>
+    <input type="range" id="ls" min="0" max="0.05" step="0.001" value="0.01" data-dp="3"></label></div>
+  <div><label>Two-peak span \(n\) (periods)<output id="ln_o"></output>
+    <input type="range" id="ln" min="1" max="10" step="1" value="3" data-dp="0"></label></div>
+  <div><label>Fit only peaks above \(\kappa\sigma\), \(\kappa\)<output id="lk_o"></output>
+    <input type="range" id="lk" min="0" max="20" step="1" value="10" data-dp="0"></label></div>
+  <div><button id="renoise">New noise</button> <span id="seed_o" style="font-size:12px"></span></div>
+</div>
+
+<div class="figs">
+  <div class="fig" style="flex:2 1 520px"><div class="ttl">Sampled record \(x_j=x(j\Delta t)+\text{noise}\)</div>
+    <canvas id="clr" data-ar="0.42"></canvas>
+    <div class="cap">Light line: noise-free response. Blue: the samples. Red dots: detected peaks used in the fit. Grey rings: detected peaks left out (below \(\kappa\sigma\), or after the first one that was).</div></div>
+  <div class="fig"><div class="ttl">Peaks on a log scale</div>
+    <canvas id="clk" data-ar="0.78"></canvas>
+    <div class="cap">Viscous damping makes \(\ln x_k\) a straight line in \(k\) with slope \(-\delta\). Green dashed: true line. Orange: two-peak estimate through \(x_0\) and \(x_n\). Blue: least-squares line through the red peaks. Dotted: \(\kappa\sigma\).</div></div>
+</div>
+
+<div class="figs">
+  <div class="fig"><div class="ttl">Read-out</div><table class="ro" id="ro2"></table></div>
+  <div class="fig"><div class="ttl">Error of \(\zeta\approx\delta/(2\pi)\)</div>
+    <canvas id="cle" data-ar="0.62"></canvas>
+    <div class="cap">Relative error \(1/\sqrt{1-\zeta^2}-1\), noise-free. It reaches 5% at \(\zeta=0.305\) (green dot). Red dot: the current \(\zeta\).</div></div>
+</div>
+
+<div class="note"><b class="h">Limits of the method (Lecture 7)</b><ul style="margin:4px 0 0 18px;padding:0">
+<li style="margin:3px 0"><b>Noise.</b> Picking the largest sample near a peak favours positive noise, so small peaks read high and \(\delta\) comes out low. Set \(\kappa=0\) and watch the least-squares estimate fall. Use peaks well above the noise floor, and prefer a fit over many strong peaks to two weak ones.</li>
+<li style="margin:3px 0"><b>Sampling.</b> A sampled peak misses the true peak by up to \(1-\cos(\omega_d\Delta t/2)\approx0.5\%\) here. Over \(n\) periods this error is divided by \(n\).</li>
+<li style="margin:3px 0"><b>Nonviscous damping.</b> The formula assumes \(c\dot x\). Coulomb friction makes the peaks fall linearly, not geometrically, and amplitude-dependent damping bends the line; then \(\delta\) depends on which peaks you choose. A curved \(\ln x_k\) plot is the warning sign.</li>
+<li style="margin:3px 0"><b>Beating.</b> Two modes with close frequencies modulate the peaks. \(\ln x_k\) then oscillates about a line and a two-peak estimate can be badly wrong. Isolate one mode first (filtering, or excitation of one mode).</li></ul></div>
+
+<h2>5. The phase-plane spiral</h2>
+<p>Plot the same free decay as a trajectory in the plane \((x,\ \dot x/\omega_n)\). Because the system is linear and the motion repeats its shape every damped period, the state one period later is the present state scaled down:
+$$ \big(x,\dot x\big)(t+T_d)=e^{-\zeta\omega_nT_d}\,\big(x,\dot x\big)(t)=e^{-\delta}\big(x,\dot x\big)(t). $$
+So <b>every ray from the origin cuts the spiral in a geometric sequence</b> with ratio \(e^{\delta}\), whatever its angle. The peaks of \(x(t)\) are the crossings of the ray along the positive \(x\)-axis (\(\dot x=0\), \(x>0\)), which is why the peak ratio is exact even though the peaks do not lie on the envelope. Drag in the plane to turn the ray. In the coordinates \(\big(x,\ (\dot x+\zeta\omega_nx)/\omega_d\big)\) the spiral is an exact logarithmic spiral: its radius is the envelope \(e^{-\zeta\omega_nt}\) itself. The damping ratio is the \(\zeta\) of section 4.</p>
+<div class="figbar"><label class="chk"><input type="checkbox" id="spl"> use \(\big(x,(\dot x+\zeta\omega_nx)/\omega_d\big)\): exact log-spiral</label><span class="sep"></span><button id="spk">Ray through the peaks</button></div>
+<div class="figs">
+  <div class="fig"><div class="ttl">Free decay in the phase plane: drag to turn the ray</div>
+    <canvas id="csp" data-ar="0.9"></canvas>
+    <div class="cap">Blue: trajectory from \(x(0)=1\), \(\dot x(0)=0\), clockwise. Red ray and dots: one crossing per revolution. Grey dashed: the circles through the first crossings, for comparison.</div></div>
+  <div class="fig"><div class="ttl">Crossing radii on a log scale</div>
+    <canvas id="csr" data-ar="0.9"></canvas>
+    <div class="cap">\(\ln r_k\) against crossing number \(k\) is a straight line of slope \(-\delta\) for every ray (blue dots); green dashed is \(\ln r_0-k\delta\). This is the regression plot of slide 12, read off a picture.</div></div>
+</div>
+<div class="figs"><div class="fig"><div class="ttl">Ratios along the ray</div><table class="ro" id="rosp"></table></div></div>
+
+<h2>6. Check yourself</h2>
+<details><summary>Two systems have roots \(-1\pm 3i\) and \(-3\pm 3i\). Which decays faster, and which oscillates faster?</summary>
+<p>The second decays faster (real part \(-3\) versus \(-1\)). Both have \(\omega_d=3\), so they oscillate at the same frequency. Their natural frequencies differ: \(\sqrt{10}\) and \(\sqrt{18}\).</p></details>
+<details><summary>At \(\zeta=1\) the roots form a double root. Why does the response contain a factor \(t\)?</summary>
+<p>Two exponentials \(e^{s_1t}\) and \(e^{s_2t}\) merge into one, so a second independent solution is needed. The limit
+\[ \lim_{s_1\to s_2}\frac{e^{s_1t}-e^{s_2t}}{s_1-s_2}=t\,e^{st}. \]</p></details>
+<details><summary>Heavily overdamped: why does more damping make the system slower?</summary>
+<p>The slow root \(-\omega_n\bigl(\zeta-\sqrt{\zeta^2-1}\bigr)\) moves back toward the origin as \(\zeta\) grows, approaching \(-\omega_n/(2\zeta)\). The damper holds the mass back.</p></details>
+<details><summary>A free decay has peaks \(1.00\) and \(0.20\) five periods apart. Find \(\zeta\) exactly and with \(\zeta\approx\delta/(2\pi)\).</summary>
+<p>\(\delta=\tfrac15\ln 5=0.3219\). Exactly, \(\zeta=\delta/\sqrt{4\pi^2+\delta^2}=0.05116\). The approximation gives \(0.05123\), 0.13% high. At this damping the approximation is harmless; the noise in the peaks matters far more.</p></details>
+
+<footer>Slides: Lecture 5 (characteristic roots, root classification), Lecture 6 (regimes, settling estimate), Lecture 7 (logarithmic decrement). Source text: Inman, <i>Engineering Vibration</i>, Ch. 1. Figure labels inside the plots are plain text; the equations on the page are typeset with KaTeX.</footer>
+</div>
+
+<script src="assets/katex/katex.min.js"></script>
+<script src="assets/katex/auto-render.min.js"></script>
+<script src="assets/math.js"></script>
+<script src="assets/phonebar.js"></script>
+<script src="assets/layout.js"></script>
+<script src="assets/lib.js"></script>
+<script>
+(function(){
+const {ro,TeX,C,Plot,bind,val,chk,setVal,animate,nice}=TUT;
+const wn=1;
+const ps=new Plot(document.getElementById('cs'),{xmin:-5.3,xmax:0.9,ymin:-1.35,ymax:1.35,equal:true,pad:[40,10,10,34]});
+const pt=new Plot(document.getElementById('ct'),{xmin:0,xmax:20,ymin:-1.15,ymax:1.15,pad:[44,12,12,36]});
+const pm=new Plot(document.getElementById('cm'),{pad:[6,6,6,6],xmin:0,xmax:10,ymin:-3.2,ymax:3.2});
+let tt=0;
+
+function roots(z){
+  if(z<1) return {re:[-z*wn,-z*wn],im:[wn*Math.sqrt(1-z*z),-wn*Math.sqrt(1-z*z)],type:z===0?'undamped':(Math.abs(z-1)<1e-3?'critical':'under')};
+  const r=wn*Math.sqrt(z*z-1);
+  return {re:[-z*wn+r,-z*wn-r],im:[0,0],type:Math.abs(z-1)<1e-3?'critical':'over'};
+}
+function resp(z,t){
+  const s=z*wn;
+  if(Math.abs(z-1)<1e-3) return (1+s*t)*Math.exp(-s*t);
+  if(z<1){const wd=wn*Math.sqrt(1-z*z);return Math.exp(-s*t)*(Math.cos(wd*t)+s/wd*Math.sin(wd*t));}
+  const r=wn*Math.sqrt(z*z-1),s1=-s+r,s2=-s-r;
+  return (-s2*Math.exp(s1*t)+s1*Math.exp(s2*t))/(s1-s2);
+}
+function draw(){
+  const z=val('zeta'), R=roots(z);
+  // --- s-plane
+  ps.begin(); ps.axes({zero:true,xlabel:'Re(s) = σ',ylabel:'Im(s) = ω',grid:true});
+  ps.arc(0,0,wn,0,2*Math.PI,C.axis,1.3,[5,4]);
+  if(chk('locus')){
+    const a=[],b=[],c=[],d=[];
+    for(let k=0;k<=200;k++){const zz=k/200*1; const r=roots(zz); a.push(r.re[0]);b.push(r.im[0]);c.push(r.re[1]);d.push(r.im[1]);}
+    ps.line(a,b,'#b9b5a8',3);ps.line(c,d,'#b9b5a8',3);
+    const e=[],f=[],g2=[];for(let k=0;k<=250;k++){const zz=1+k/250*1.5;const r=roots(zz);e.push(r.re[0]);f.push(0);g2.push(r.re[1]);}
+    ps.line(e,f,'#b9b5a8',3);ps.line(g2,f,'#b9b5a8',3);
+  }
+  // 45 deg lines
+  ps.line([-1.4,0],[1.4,0],'#e8d5c4',1);
+  // geometry for underdamped
+  if(R.type==='under'||R.type==='undamped'){
+    const sg=R.re[0], wd=R.im[0];
+    ps.line([0,sg],[0,wd],C.copper,1.5);               // origin to root
+    ps.line([sg,sg],[0,wd],C.green,2,[4,3]);            // height = wd
+    ps.line([sg,0],[0,0],C.orange,3.5);                  // sigma
+    const th=Math.acos(Math.min(z,1));
+    ps.arc(0,0,0.34,Math.PI-th,Math.PI,C.copper,1.8);
+    ps.text('θ',-0.52,0.12,C.copper,{align:'center',bold:true});
+    ps.text('ωn',sg/2+0.08,wd/2+0.14,C.copper,{align:'center',size:12});
+    ps.text('ωd',sg-0.08,wd/2,C.green,{align:'right',size:12});
+    if(z>0.05) ps.text('ζωn',sg/2,-0.12,C.orange,{align:'center',size:12});
+  }
+  for(let i=0;i<2;i++){
+    ps.dot(R.re[i],R.im[i],C.red,6.5,'#fff');
+  }
+  ps.text('× roots',0.88,1.18,C.red,{align:'right',size:12,bold:true});
+  // --- time response
+  pt.begin(); pt.axes({zero:true,xlabel:'t ωn',ylabel:'x(t)'});
+  const T=pt.x1, N=700, ts=[],xs=[];
+  for(let i=0;i<=N;i++){const t=T*i/N;ts.push(t);xs.push(resp(z,t));}
+  const sig=z*wn;
+  if(chk('env')){
+    pt.line([0,T],[0.02,0.02],C.axis,1,[2,3]);pt.line([0,T],[-0.02,-0.02],C.axis,1,[2,3]);
+    if(z>0&&z<1){pt.line(ts,ts.map(t=>Math.exp(-sig*t)/Math.sqrt(1-z*z)),C.orange,1.4,[6,4]);pt.line(ts,ts.map(t=>-Math.exp(-sig*t)/Math.sqrt(1-z*z)),C.orange,1.4,[6,4]);}
+  }
+  pt.line(ts,xs,C.blue,2.6);
+  const slow=-Math.max(R.re[0],R.re[1]);
+  const tsT=settle(z), tsE=slow>0?4/slow:Infinity;
+  if(z>0 && slow>0){
+    if(tsE<T){pt.line([tsE,tsE],[-1.15,1.15],C.copper,1.2,[1.5,3]); pt.text('4/|σ|',tsE+0.2,-0.9,C.copper,{size:12});}
+    if(tsT<T){pt.line([tsT,tsT],[-1.15,1.15],C.green,1.6,[5,3]); pt.text('ts',tsT+0.2,0.9,C.green,{size:12,bold:true});}
+  }
+  pt.dot(tt,resp(z,tt),C.red,6,'#fff');
+  // --- mass cartoon
+  pm.begin();const g=pm.g,xb=resp(z,tt),cx=6.0+2.6*xb,bw=1.5;
+  g.fillStyle='#e9e5d8';g.fillRect(pm.X(0)-5,pm.Y(2.7),5,pm.Y(-2.7)-pm.Y(2.7));
+  pm.line([0,10],[-1.12,-1.12],C.grid,1.2);
+  const zg=(x0,x1,y)=>{const xs=[x0,x0+0.4],ys=[y,y],n=7,L=x1-x0-0.8;for(let i=0;i<n;i++){xs.push(x0+0.4+L*(i+0.5)/n);ys.push(y+(i%2?-0.3:0.3));}xs.push(x1-0.4,x1);ys.push(y,y);pm.line(xs,ys,C.plum,2.2);};
+  zg(0,cx-bw/2,1.2);
+  const dm=(x0,x1,y)=>{const mid=x0+0.55*(x1-x0);pm.line([x0,mid],[y,y],C.axis,2);pm.line([mid-0.9,mid+0.9],[y+0.35,y+0.35],C.axis,2);pm.line([mid-0.9,mid+0.9],[y-0.35,y-0.35],C.axis,2);pm.line([mid-0.9,mid-0.9],[y+0.35,y-0.35],C.axis,2);pm.line([mid,x1],[y,y],C.orange,2.4);pm.line([mid,mid],[y+0.28,y-0.28],C.orange,3);};
+  dm(0,cx-bw/2,-0.55);
+  g.fillStyle='rgba(0,114,189,.22)';g.strokeStyle=C.blue;g.lineWidth=2.4;const X0=pm.X(cx-bw/2),Y0=pm.Y(1.6),W0=pm.X(cx+bw/2)-X0,H0=pm.Y(-1.6)-Y0;g.fillRect(X0,Y0,W0,H0);g.strokeRect(X0,Y0,W0,H0);
+  pm.text('m',cx,0,C.ink,{align:'center',bold:true,size:15});pm.line([6,6],[-2.6,2.6],C.axis,1,[3,4]);pm.text('x = 0',6,-2.9,C.muted,{align:'center',size:12});
+  // --- read-out
+  const regime={undamped:'undamped (imaginary roots)',under:'underdamped (complex pair)',critical:'critical (double real root)',over:'overdamped (two real roots)'}[R.type];
+  const f=v=>(Math.abs(v)<5e-4?0:v).toFixed(3);
+  let rows=[['Regime',regime]];
+  if(R.type==='under'||R.type==='undamped') rows.push(['Roots \\(s_{1,2}\\)',TeX(f(R.re[0])+'\\pm'+f(R.im[0])+'\\,i')],['Damped frequency \\(\\omega_d\\)',TeX(f(R.im[0])+'\\,\\omega_n')],['Angle \\(\\theta=\\arccos\\zeta\\)',(Math.acos(Math.min(z,1))*180/Math.PI).toFixed(1)+'°'],['Decay time constant \\(1/(\\zeta\\omega_n)\\)',z>0?TeX((1/sig).toFixed(2)+'/\\omega_n'):TeX('\\infty')],['Overshoot \\(e^{-\\pi\\zeta/\\sqrt{1-\\zeta^2}}\\)',z>0?(100*Math.exp(-Math.PI*z/Math.sqrt(1-z*z))).toFixed(1)+' %':'100 % (no decay)']);
+  else rows.push(['Roots \\(s_1,\\ s_2\\)',f(R.re[0])+',  '+f(R.re[1])],['Product \\(s_1s_2\\)',TeX((R.re[0]*R.re[1]).toFixed(3)+'=\\omega_n^2')],['Slow time constant',TeX((1/slow).toFixed(2)+'/\\omega_n')]);
+  if(z>0){
+    const elab=R.type==='over'?'Estimate \\(4/|s_{\\rm slow}|\\)':(R.type==='critical'?'Estimate \\(4/|s|\\)':'Envelope estimate \\(4/(\\zeta\\omega_n)\\)');
+    const er=(tsE/tsT-1)*100;
+    rows.push(['True 2% settling time (last \\(|x|\\ge0.02\\))',TeX(tsT.toFixed(2)+'/\\omega_n')],
+              [elab,TeX(tsE.toFixed(2)+'/\\omega_n')+' &nbsp;('+(er>=0?'+':'−')+Math.abs(er).toFixed(0)+'% vs true)']);
+  }
+  ro(document.getElementById('ro'),rows);
+  drawSettle(z);
+}
+// True 2% settling time for x(0)=1, v(0)=0: last t with |x(t)| >= 0.02.
+const EPS=0.02, stCache=new Map();
+function settle(z){
+  if(!(z>0)) return Infinity;
+  const key=z.toFixed(5); if(stCache.has(key)) return stCache.get(key);
+  let ts;
+  if(z<1-1e-3){
+    // |x| <= e^{-z t}/sqrt(1-z^2): nothing can exceed EPS after Tmax. Scan back from there.
+    const Tmax=Math.log(1/(EPS*Math.sqrt(1-z*z)))/z+0.5, h=0.01;
+    let t=Tmax; while(t>0 && Math.abs(resp(z,t))<EPS) t-=h;
+    let a=Math.max(t,0), b=t+h; for(let i=0;i<50;i++){const m=(a+b)/2; if(Math.abs(resp(z,m))>=EPS) a=m; else b=m;}
+    ts=a;
+  } else {
+    // critical or overdamped from rest: x(t) is positive and decreasing, so bisect x(t)=EPS.
+    let b=1; while(resp(z,b)>=EPS) b*=2; let a=0;
+    for(let i=0;i<60;i++){const m=(a+b)/2; if(resp(z,m)>=EPS) a=m; else b=m;}
+    ts=a;
+  }
+  if(stCache.size>4000) stCache.clear(); stCache.set(key,ts); return ts;
+}
+const estF=z=>z<1?4/z:4/(z-Math.sqrt(z*z-1));
+// precompute the settling-time curve once
+const ZG=[],TG=[],EG=[]; let zMin=0,tMin=Infinity;
+for(let z=0.05;z<=3.00001;z+=0.0025){
+  const t=settle(z);
+  // break the line at a jump (a step that departs from the smooth trend by more than 1)
+  if(TG.length && Math.abs((t-TG[TG.length-1])-(estF(z)-EG[EG.length-1]))>1){ZG.push(z);TG.push(NaN);EG.push(estF(z));}
+  ZG.push(z);TG.push(t);EG.push(estF(z));
+  if(t<tMin){tMin=t;zMin=z;}
+}
+for(let z=Math.max(0.05,zMin-0.01);z<=zMin+0.01;z+=0.0001){const t=settle(z); if(t<tMin){tMin=t;zMin=z;}}
+document.getElementById('stmin').innerHTML='Smallest true value on this grid: \\(t_s='+tMin.toFixed(3)+'/\\omega_n\\) at \\(\\zeta='+zMin.toFixed(4)+'\\).';
+const pst=new Plot(document.getElementById('cst'),{xmin:0,xmax:3,ymin:0,ymax:24,pad:[44,12,12,36]});
+function drawSettle(z){
+  pst.begin(); pst.axes({xlabel:'ζ',ylabel:'ts ωn (2%)'});
+  pst.line([1,1],[0,24],C.axis,1,[4,4]);
+  pst.line(ZG,EG,C.orange,2,[7,4]);
+  pst.line(ZG,TG,C.blue,2.4);
+  pst.ring(zMin,tMin,C.green,6); pst.text('min '+tMin.toFixed(2)+' at ζ = '+zMin.toFixed(3),zMin+0.06,tMin-1.6,C.green,{size:12,bold:true});
+  pst.text('ζ = 1: true 5.83, estimate 4',1.04,1.6,C.muted,{size:12});
+  if(z>=0.05&&z<=3){const t=settle(z); if(t<=24) pst.dot(z,t,C.red,6,'#fff'); const e=estF(z); if(e<=24) pst.ring(z,e,C.orange,5);}
+}
+// ---------- Section 4: logarithmic decrement from a noisy sampled record ----------
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+let seed=1;
+const DT=0.2;                                  // sampling interval, units of 1/wn
+const W=Math.round(0.7*2*Math.PI/DT);          // peak window: +-0.7 nominal periods, in samples
+const plr=new Plot(document.getElementById('clr'),{xmin:0,xmax:100,ymin:-1.1,ymax:1.1,pad:[44,12,12,36]});
+const plk=new Plot(document.getElementById('clk'),{xmin:0,xmax:10,ymin:1e-3,ymax:2,ylog:true,pad:[48,12,12,36]});
+const ple=new Plot(document.getElementById('cle'),{xmin:0,xmax:0.6,ymin:0,ymax:25,pad:[44,12,12,36]});
+const zOf=d=>d/Math.sqrt(4*Math.PI*Math.PI+d*d);
+function drawLD(){
+  const z=val('lz'), sg=val('ls'), nIn=Math.round(val('ln')), kap=val('lk');
+  const wd=Math.sqrt(1-z*z), Td=2*Math.PI/wd, dTrue=2*Math.PI*z/wd;
+  const Tend=Math.max(3*Td,Math.min(20*Td,Math.log(1/0.003)/z));
+  const N=Math.floor(Tend/DT)+1, R=mulberry32(seed*2654435761>>>0);
+  const t=[],y=[],yc=[];
+  for(let j=0;j<N;j++){
+    let u=0; while(u===0) u=R(); const v=R();
+    const g=Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);   // Box-Muller
+    t.push(j*DT); yc.push(resp(z,j*DT)); y.push(yc[j]+sg*g);
+  }
+  // peaks: positive samples that are the largest within +-W samples
+  const P=[];
+  for(let j=0;j<N-W;j++){
+    if(y[j]<=0) continue; let ok=true;
+    for(let i=Math.max(0,j-W);i<=j+W;i++){ if(i!==j && y[i]>y[j]){ok=false;break;} }
+    if(ok) P.push(j);
+  }
+  // peaks used in the fit: the leading run above kappa*sigma
+  let nUse=0; while(nUse<P.length && y[P[nUse]]>kap*sg) nUse++;
+  const n=Math.min(nIn,P.length-1);
+  const d2=n>=1?Math.log(y[P[0]]/y[P[n]])/n:NaN;
+  let dLS=NaN, bLS=NaN;
+  if(nUse>=2){
+    let mk=0,mL=0; for(let k=0;k<nUse;k++){mk+=k;mL+=Math.log(y[P[k]]);} mk/=nUse; mL/=nUse;
+    let sxy=0,sxx=0; for(let k=0;k<nUse;k++){sxy+=(k-mk)*(Math.log(y[P[k]])-mL); sxx+=(k-mk)*(k-mk);}
+    dLS=-sxy/sxx; bLS=mL+dLS*mk;          // ln x_k = bLS - dLS*k
+  }
+  // record
+  plr.set({xmax:Tend}); plr.begin(); plr.axes({zero:true,xlabel:'t ωn',ylabel:'x'});
+  plr.line(t,yc,'#c9c4b4',1.2);
+  plr.line(t,y,C.blue,1.3);
+  P.forEach((j,k)=>{ if(k<nUse) plr.dot(t[j],y[j],C.red,4.5,'#fff'); else plr.ring(t[j],y[j],C.muted,4); });
+  // semilog peaks
+  const kmax=Math.max(P.length-1,1);
+  let lo=1; P.forEach(j=>{lo=Math.min(lo,y[j]);}); if(sg>0) lo=Math.min(lo,kap*sg||lo);
+  const ymin=Math.pow(10,Math.floor(Math.log10(Math.max(lo*0.7,1e-6))));
+  plk.set({xmin:-0.3,xmax:kmax+0.3,ymin:ymin,ymax:2}); plk.begin();
+  plk.axes({xlabel:'peak number k',ylabel:'x_k (log scale)',xticks:nice(0,kmax,Math.min(kmax,8)).filter(v=>Number.isInteger(v))});
+  const ks=[0,kmax];
+  plk.line(ks,ks.map(k=>Math.exp(-dTrue*k)),C.green,1.6,[6,4]);
+  if(sg>0&&kap>0) plk.line([-0.3,kmax+0.3],[kap*sg,kap*sg],C.axis,1.2,[2,3]);
+  if(isFinite(dLS)) plk.line(ks,ks.map(k=>Math.exp(bLS-dLS*k)),C.blue,2);
+  if(isFinite(d2)) plk.line([0,kmax],[y[P[0]],y[P[0]]*Math.exp(-d2*kmax)],C.orange,2,[3,2]);
+  P.forEach((j,k)=>{ if(k<nUse) plk.dot(k,y[j],C.red,4.5,'#fff'); else plk.ring(k,y[j],C.muted,4); });
+  if(n>=1){ plk.ring(0,y[P[0]],C.orange,8); plk.ring(n,y[P[n]],C.orange,8); }
+  // error of delta/(2 pi)
+  ple.begin(); ple.axes({xlabel:'ζ',ylabel:'error of δ/2π (%)'});
+  const zs=[]; for(let i=0;i<=300;i++) zs.push(0.6*i/300);
+  ple.line([0,0.6],[5,5],C.axis,1,[4,4]);
+  ple.line(zs,zs.map(q=>(1/Math.sqrt(1-q*q)-1)*100),C.plum,2.4);
+  const z5=Math.sqrt(1-1/1.05/1.05); ple.dot(z5,5,C.green,5,'#fff'); ple.text('5% at ζ = '+z5.toFixed(3),z5-0.02,8,C.green,{size:12,align:'right',bold:true});
+  ple.dot(z,(1/Math.sqrt(1-z*z)-1)*100,C.red,6,'#fff');
+  // read-out
+  const pc=(e)=>isFinite(e)?((e>=0?'+':'−')+Math.abs(100*e).toFixed(1)+'%'):'–';
+  const zr=(d)=>isFinite(d)?zOf(d).toFixed(4)+' &nbsp;('+pc(zOf(d)/z-1)+')':'–';
+  const za=(d)=>isFinite(d)?(d/(2*Math.PI)).toFixed(4)+' &nbsp;('+pc(d/(2*Math.PI)/z-1)+')':'–';
+  ro(document.getElementById('ro2'),[
+    ['True \\(\\zeta\\), true \\(\\delta=2\\pi\\zeta/\\sqrt{1-\\zeta^2}\\)',z.toFixed(4)+', &nbsp;'+dTrue.toFixed(4)],
+    ['Peaks detected / used in fit',P.length+' / '+nUse],
+    ['Two-peak \\(\\delta=\\tfrac1n\\ln(x_0/x_n)\\), \\(n='+n+'\\)',isFinite(d2)?d2.toFixed(4):'needs two peaks'],
+    ['&nbsp;&nbsp;\\(\\zeta=\\delta/\\sqrt{4\\pi^2+\\delta^2}\\)',zr(d2)],
+    ['&nbsp;&nbsp;\\(\\zeta\\approx\\delta/(2\\pi)\\)',za(d2)],
+    ['Least-squares \\(\\delta\\) (slope of \\(\\ln x_k\\))',isFinite(dLS)?dLS.toFixed(4):'needs two peaks above \\(\\kappa\\sigma\\)'],
+    ['&nbsp;&nbsp;\\(\\zeta=\\delta/\\sqrt{4\\pi^2+\\delta^2}\\)',zr(dLS)],
+    ['&nbsp;&nbsp;\\(\\zeta\\approx\\delta/(2\\pi)\\)',za(dLS)]
+  ]);
+  document.getElementById('seed_o').textContent='noise seed '+seed;
+}
+bind(['lz','ls','ln','lk'],drawLD);
+document.getElementById('renoise').addEventListener('click',()=>{seed++;drawLD();});
+window.addEventListener('resize',drawLD);
+drawLD();
+bind(['zeta'],draw);
+document.getElementById('locus').addEventListener('change',draw);
+document.getElementById('env').addEventListener('change',draw);
+document.querySelectorAll('button[data-z]').forEach(b=>b.addEventListener('click',()=>{ctl.paused=true;setVal('zeta',b.dataset.z);draw();}));
+let dir=1;
+const ctl=animate(dt=>{let z=val('zeta')+dir*0.6*dt; if(z>2.5){z=2.5;dir=-1;} if(z<0){z=0;dir=1;} setVal('zeta',z); draw();});
+ctl.paused=true;
+document.getElementById('play').addEventListener('click',e=>{ctl.paused=!ctl.paused;e.target.textContent=ctl.paused?'Sweep ζ':'Pause';});
+const ctl2=animate(dt=>{tt+=dt*1.6;if(tt>20)tt=0;draw();});
+window.addEventListener('resize',draw);
+draw();
+})();
+</script>
+<script>
+(function(){
+const {ro,C,Plot,val,chk,TAU,drag}=TUT;const S=id=>document.getElementById(id);
+const P=new Plot(S('csp'),{pad:[40,12,12,34],equal:true,xmin:-1.1,xmax:1.1,ymin:-1.1,ymax:1.1});
+const Q=new Plot(S('csr'),{pad:[48,12,12,38],xmin:0,xmax:8,ymin:1e-3,ymax:1.2,ylog:true});
+let alpha=0;const NREV=8;
+function traj(z){const wd=Math.sqrt(1-z*z),Td=TAU/wd,n=NREV*360,xs=[],ys=[],ts=[];   // omega_n = 1
+  for(let i=0;i<=n;i++){const t=i*NREV*Td/n,e=Math.exp(-z*t),x=e*(Math.cos(wd*t)+z/wd*Math.sin(wd*t)),v=-e*Math.sin(wd*t)/wd;
+    ts.push(t);xs.push(x);ys.push(chk('spl')?(v+z*x)/wd:v);}return {xs,ys,ts,Td,wd};}
+function crossings(T){const out=[];let prev=null;let acc=0;
+  for(let i=0;i<T.xs.length;i++){const a=Math.atan2(T.ys[i],T.xs[i]);if(prev!==null){let d=a-prev;if(d>Math.PI)d-=TAU;if(d<-Math.PI)d+=TAU;
+      const a0=acc,a1=acc+d;   // clockwise: unwrapped angle decreases
+      // crossing of alpha - 2 pi k
+      for(let k=Math.ceil((a1-alpha)/TAU-1e-12);k<=Math.floor((a0-alpha)/TAU+1e-12);k++){const tgt=alpha+k*TAU;if(tgt<=a0&&tgt>a1){const f=(a0-tgt)/(a0-a1),x=T.xs[i-1]+f*(T.xs[i]-T.xs[i-1]),y=T.ys[i-1]+f*(T.ys[i]-T.ys[i-1]);out.push([x,y,Math.hypot(x,y)]);}}
+      acc=a1;}else acc=a;prev=a;}
+  // the start point counts as crossing 0 when it lies on the ray
+  return out;}
+function draw(){const z=Math.min(val('lz'),0.4),T=traj(z),cr=crossings(T),delta=TAU*z/Math.sqrt(1-z*z);
+  P.begin();P.axes({xlabel:'x / x(0)',ylabel:chk('spl')?'(ẋ+ζωₙx)/ωd':'ẋ/ωₙ',zero:true});
+  cr.slice(0,3).forEach(c=>P.arc(0,0,c[2],0,TAU,'#c9c4b4',1,[4,4]));
+  P.line(T.xs,T.ys,C.blue,1.8);
+  P.line([0,1.6*Math.cos(alpha)],[0,1.6*Math.sin(alpha)],C.red,1.6);
+  cr.forEach(c=>P.dot(c[0],c[1],C.red,4));P.dot(1,0,C.ink,4);
+  const ks=cr.map((_,k)=>k),rs=cr.map(c=>c[2]);
+  Q.set({xmax:Math.max(4,cr.length),ymin:Math.max(1e-4,Math.min(...rs,1)*0.5)});Q.begin();Q.axes({xlabel:'crossing number k',ylabel:'r_k'});
+  if(rs.length)Q.line([0,Q.o.xmax],[rs[0],rs[0]*Math.exp(-delta*Q.o.xmax)],C.green,1.6,[6,4]);
+  ks.forEach(k=>Q.dot(k,rs[k],C.blue,5));
+  const rat=rs.slice(1).map((r,k)=>rs[k]/r);
+  ro(S('rosp'),[
+    ['Ray angle',(alpha*180/Math.PI).toFixed(1)+'&deg;'],
+    ['\\(e^{\\delta}\\) from \\(\\zeta\\)',Math.exp(delta).toFixed(5)],
+    ['Crossing ratios \\(r_k/r_{k+1}\\)',rat.slice(0,5).map(v=>v.toFixed(5)).join(', ')||'—'],
+    ['\\(\\delta=\\ln(r_k/r_{k+1})\\), mean of all',rat.length?(rat.reduce((a,b)=>a+Math.log(b),0)/rat.length).toFixed(5):'—'],
+    ['\\(\\delta=2\\pi\\zeta/\\sqrt{1-\\zeta^2}\\)',delta.toFixed(5)],
+  ]);}
+drag(S('csp'),P,(x,y)=>{alpha=Math.atan2(y,x);draw();});
+S('spk').onclick=()=>{alpha=0;draw();};
+['lz'].forEach(id=>S(id).addEventListener('input',draw));S('spl').addEventListener('change',draw);
+window.addEventListener('resize',draw);draw();
+})();
+</script>
+</body>
+</html>

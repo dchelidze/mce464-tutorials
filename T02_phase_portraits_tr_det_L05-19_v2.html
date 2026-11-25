@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tutorial 2: Phase Portraits and the Trace&ndash;Determinant Plane</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+/* preset and action buttons sit with the figures they act on; parameters stay in the sidebar */
+.figbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:12px 0 2px;padding:8px 12px;background:var(--card);border:1px solid var(--rule);border-radius:10px}
+.figbar button{margin:0}
+.figbar .lab{font-size:14px;font-weight:600;margin-right:2px}
+.figbar .sep{width:1px;align-self:stretch;background:var(--rule);margin:0 4px}
+.figbar .note{flex-basis:100%;font-size:12px;color:var(--muted);border:0;background:none;padding:0;margin:2px 0 0;box-shadow:none}
+.figbar #gal{display:contents}
+</style>
+<style>/* phone width (sidebar stacked): a wide display equation scrolls inside its own box instead of widening the page; the padding keeps tall delimiters unclipped */@media (max-width:980px){.katex-display{overflow-x:auto;overflow-y:hidden;padding:.45em 0}}</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <nav class="tn"><a href="index.html">All tutorials</a><a href="T01_energy_landscape_L02-04_L10.html">&larr; Tutorial 1</a><a href="T03_s-plane_roots_L05-06.html">Next: Tutorial 3 &rarr;</a></nav>
+  <div class="kicker">MCE 464 &middot; Tutorial 2 &middot; Lectures 5&ndash;6, 10 and 19</div>
+  <h1>Phase Portraits and the Trace&ndash;Determinant Plane</h1>
+  <p class="lede">Two numbers, the trace and the determinant of the state matrix, decide the geometry of every linear equilibrium. Drag a point through the trace&ndash;determinant plane and watch the whole phase portrait flow into a new shape.</p>
+</div></header>
+<div class="wrap">
+
+<h2>1. Two numbers, one portrait</h2>
+<p>Write a one-DOF linear system as a first-order pair in the state \((x,v)\):
+$$ \dot{\vb{x}}=\vb{A}\vb{x},\qquad \vb{A}=\begin{bmatrix}0&1\\-\delta&\tau\end{bmatrix},\qquad \tau=\operatorname{tr}\vb{A},\quad \delta=\det\vb{A}, $$
+which is the equation \(\ddot x-\tau\dot x+\delta x=0\). For a mass&ndash;spring&ndash;damper, \(\tau=-c/m\le0\) and \(\delta=k/m\). Positive \(\tau\) is negative damping (self-excitation); negative \(\delta\) is negative stiffness (a hilltop). The characteristic roots obey
+$$ \lambda^2-\tau\lambda+\delta=0,\qquad \lambda_1+\lambda_2=\tau,\quad \lambda_1\lambda_2=\delta,\qquad \lambda_{1,2}=\frac{\tau}{2}\pm\sqrt{\frac{\tau^2}{4}-\delta}. $$
+So <b>trace</b> is the sum of the roots (twice their common real part when they are complex), which sets growth or decay, and <b>determinant</b> is the product (a negative value means one root on each side of the imaginary axis). The parabola \(\delta=\tau^2/4\) is where the roots collide, and it separates oscillating from non-oscillating behaviour.</p>
+<ul>
+  <li><b>\(\delta<0\):</b> saddle. One stable and one unstable direction; almost every orbit is eventually thrown out along the unstable eigenvector.</li>
+  <li><b>\(\delta>0,\ \tau^2<4\delta\):</b> complex roots, spiral. Inward if \(\tau<0\), outward if \(\tau>0\); a closed-orbit <em>center</em> exactly on \(\tau=0\).</li>
+  <li><b>\(\delta>0,\ \tau^2>4\delta\):</b> real roots of the same sign, node. Stable for \(\tau<0\), unstable for \(\tau>0\); orbits hug the slow eigenvector.</li>
+  <li><b>\(\delta=0\):</b> one zero root, a whole line of equilibria.</li>
+</ul>
+
+<div class="ctl" data-title="Where the system sits">
+  <div><label>Trace \(\tau\)<output id="tr_o"></output><input type="range" id="tr" min="-4" max="4" step="0.01" value="-0.8"></label></div>
+  <div><label>Determinant \(\delta\)<output id="det_o"></output><input type="range" id="det" min="-3" max="5" step="0.01" value="1.5"></label></div>
+</div>
+<div class="ctl" data-title="Flow">
+  <div><label>Flow speed<output id="spd_o"></output><input type="range" id="spd" min="0.2" max="2.5" step="0.05" value="1"></label></div>
+  <div><label>Trail length<output id="tl_o"></output><input type="range" id="tl" min="4" max="60" step="1" value="22" data-dp="0"></label></div>
+  <div><label class="chk"><input type="checkbox" id="eig" checked> show eigen-directions</label>
+       <label class="chk"><input type="checkbox" id="prb" checked> show launched orbit (click the portrait)</label></div>
+  <div><button id="play">Pause flow</button></div>
+</div>
+
+<div class="figbar"><span class="lab">Typical portraits:</span><div id="gal"><button data-p="0,1.5,c">Center</button><button data-p="-0.8,1.5,c">Stable spiral</button><button data-p="0.8,1.5,c">Unstable spiral</button><button data-p="-3.2,1.5,c">Stable node</button><button data-p="3.2,1.5,c">Unstable node</button><button data-p="0,-1.5,c">Saddle</button><button data-p="-2,1,s">Stable star</button><button data-p="2,1,s">Unstable star</button><button data-p="-2,1,c">Degenerate stable node</button><button data-p="2,1,c">Degenerate unstable node</button><button data-p="-1,0,c">Line of equilibria</button><button data-p="-0.4,1,c">Damped pendulum, bottom</button><button data-p="-0.4,-1,c">Damped pendulum, top</button></div><span class="sep"></span><button id="tour">Tour all regions</button><div class="note">Stars need a non-oscillator form, \(A=\lambda I\); every other preset uses \(\ddot x-\tau\dot x+\delta x=0\).</div></div>
+<div class="figs">
+  <div class="fig"><div class="ttl">Trace&ndash;determinant plane: drag the red point</div><canvas id="ca" data-ar="0.82"></canvas>
+    <div class="cap">Dashed parabola \(\delta=\tau^2/4\). Left half: decay; right half: growth. Green line \(\tau=0\): centers. Below \(\delta=0\): saddles.</div></div>
+  <div class="fig"><div class="ttl">Phase portrait \((x,v)\): click to launch an orbit</div><canvas id="cb" data-ar="0.9"></canvas>
+    <div class="cap">Blue comets: a field of test points carried by the flow. Copper lines: real eigenvectors (slope = root). Red: the orbit launched from your click, forward (solid) and backward (dotted).</div></div>
+  <div class="fig"><div class="ttl">Roots in the \(s\)-plane</div><canvas id="cc" data-ar="0.9"></canvas>
+    <div class="cap">The roots move as you change \(\tau\) and \(\delta\); the grey trace shows where they have been. Blue half: stable. Orange half: unstable.</div></div>
+  <div class="fig"><div class="ttl">The launched orbit in time</div><canvas id="cd" data-ar="0.9"></canvas>
+    <div class="cap">Blue: \(x(t)\). Orange: \(v(t)\). The dot follows the red marker in the portrait.</div></div>
+</div>
+<div class="figs"><div class="fig"><div class="ttl">Read-out</div><table class="ro" id="ro"></table></div>
+  <div class="fig"><div class="ttl">What to try</div>
+    <ol style="margin:4px 0 0 18px;padding:0">
+      <li>Start at the center and push \(\tau\) slightly negative: closed orbits become inward spirals. Push it positive: outward spirals. The center is a knife edge.</li>
+      <li>Walk across the parabola at fixed \(\delta\): the spiral unwinds, the oscillation disappears, and the portrait becomes a node whose orbits all bend toward one direction, the slow eigenvector.</li>
+      <li>Lower \(\delta\) through zero: a stable node becomes a saddle. A stable equilibrium turns into a hilltop. This is the change of curvature of the potential seen in Tutorial 1.</li>
+      <li>Press <b>Tour</b> to circle through every region continuously.</li>
+    </ol></div></div>
+
+<h2>2. Why this classifies nonlinear equilibria too</h2>
+<p>For a nonlinear system \(\dot{\vb{x}}=\vb{f}(\vb{x})\), linearize at an equilibrium and read the trace and determinant of the Jacobian \(\vb{J}=\partial\vb{f}/\partial\vb{x}\). Away from the boundaries (hyperbolic cases) the nonlinear portrait looks locally like the linear one. The damped pendulum at the bottom has \(\tau<0,\ \delta>0\): a spiral sink when lightly damped (\(\tau^2<4\delta\)), a stable node when overdamped. At the top \(\delta<0\): a saddle. Centers (\(\tau=0\)) are not robust: a small nonlinearity or damping decides whether the orbit closes or spirals, which is why the damped and undamped pendulum differ qualitatively near the boundary.</p>
+
+<h2>3. Check yourself</h2>
+<details><summary>The roots are \(-1\pm2i\). Where is the point in the trace&ndash;determinant plane, and what does the portrait look like?</summary>
+<p>\(\tau=-2\), \(\delta=1+4=5\). It lies above the parabola (\(\tau^2/4=1<5\)) in the left half: a stable spiral that turns inward with decay rate 1 and angular frequency 2.</p></details>
+<details><summary>Why can a node never spiral?</summary>
+<p>Real roots mean real eigenvectors: invariant straight lines that orbits cannot cross. Orbits are trapped in the sectors between them and cannot rotate. Complex roots have no real invariant line, so orbits wind around the equilibrium.</p></details>
+<details><summary>What does the trace tell you about the area of a patch of initial conditions?</summary>
+<p>Liouville's formula: areas in the phase plane change as \(e^{\tau t}\). Watch the comets for \(\tau=0\): a patch keeps its area while it shears and rotates; for \(\tau<0\) it shrinks.</p></details>
+
+<footer>Slides: Lecture 5 (characteristic roots, classification), Lecture 6 (regimes), Lecture 10 (local stability, state equations), Lecture 19 (poles, state space). Orbits are integrated with fourth-order Runge&ndash;Kutta. Labels in the plots are plain text; equations are typeset with KaTeX.</footer>
+</div>
+
+<script src="assets/katex/katex.min.js"></script>
+<script src="assets/katex/auto-render.min.js"></script>
+<script src="assets/math.js"></script>
+<script src="assets/phonebar.js"></script>
+<script src="assets/layout.js"></script>
+<script src="assets/lib.js"></script>
+<script>
+(function(){
+const {ro,TeX,C,Plot,bind,val,setVal,drag,animate,TAU}=TUT;
+const S=id=>document.getElementById(id);
+const pA=new Plot(S('ca'),{pad:[44,12,12,36],xmin:-4,xmax:4,ymin:-3,ymax:5});
+const pB=new Plot(S('cb'),{pad:[40,12,12,34],equal:true,xmin:-3,xmax:3,ymin:-3,ymax:3});
+const pC=new Plot(S('cc'),{pad:[40,12,12,34],equal:true,xmin:-5,xmax:5,ymin:-3,ymax:3});
+const pD=new Plot(S('cd'),{pad:[44,12,12,36],xmin:0,xmax:8,ymin:-3,ymax:3});
+let mode='c',t=-0.8,d=1.5,probe=[1.6,0.4],tp=0,tourS=0,rootTrail=[];
+const NP=150,P=[];
+function seed(p){p.x=(Math.random()*2-1)*3;p.v=(Math.random()*2-1)*3;p.age=0;p.life=3+Math.random()*6;p.tr=[];}
+for(let i=0;i<NP;i++){const p={};seed(p);p.age=Math.random()*p.life;P.push(p);}
+function roots(){const disc=t*t/4-d;return disc>=0?{re:[t/2+Math.sqrt(disc),t/2-Math.sqrt(disc)],im:[0,0]}:{re:[t/2,t/2],im:[Math.sqrt(-disc),-Math.sqrt(-disc)]};}
+function rk(x,v,h){const f=mode==='s'?((x,v)=>[t/2*x,t/2*v]):((x,v)=>[v,t*v-d*x]);const a=f(x,v),b=f(x+h/2*a[0],v+h/2*a[1]),c=f(x+h/2*b[0],v+h/2*b[1]),e=f(x+h*c[0],v+h*c[1]);return [x+h/6*(a[0]+2*b[0]+2*c[0]+e[0]),v+h/6*(a[1]+2*b[1]+2*c[1]+e[1])];}
+function classify(){const disc=t*t-4*d;
+  if(Math.abs(d)<0.015)return ['line of equilibria (one zero root)','marginal'];
+  if(d<0)return ['saddle','unstable'];
+  if(mode==='s'&&Math.abs(disc)<0.03)return [t<0?'stable star node (A = λI, proper node)':'unstable star node (A = λI, proper node)',t<0?'stable':'unstable'];
+  if(Math.abs(disc)<0.03)return [t<0?'degenerate stable node (critical damping)':'degenerate unstable node',t<0?'stable':'unstable'];
+  if(disc<0){if(Math.abs(t)<0.015)return ['center (closed orbits)','neutral'];return [t<0?'stable spiral':'unstable spiral',t<0?'stable':'unstable'];}
+  return [t<0?'stable node':'unstable node',t<0?'stable':'unstable'];}
+function probePath(){const f=[[probe[0],probe[1]]],b=[[probe[0],probe[1]]];let a=[probe[0],probe[1]],c=[probe[0],probe[1]];
+  for(let i=0;i<400;i++){a=rk(a[0],a[1],0.02);f.push(a);}
+  for(let i=0;i<400;i++){c=rk(c[0],c[1],-0.02);if(Math.abs(c[0])>8||Math.abs(c[1])>8)break;b.push(c);}return {f,b};}
+function param(a,b,m){t=a;d=b;mode=m||'c';setVal('tr',t);setVal('det',d);rootTrail.push([roots().re.slice(),roots().im.slice()]);if(rootTrail.length>260)rootTrail.shift();}
+function draw(){
+  const R=roots(),cls=classify();
+  // tr-det plane
+  pA.begin();pA.axes({xlabel:'trace τ',ylabel:'determinant δ'});
+  const g=pA.g;
+  const fillReg=(pts,col)=>pA.fill(pts.map(q=>q[0]),pts.map(q=>q[1]),col,0.16);
+  const par=[];for(let i=0;i<=80;i++){const x=-4+8*i/80;par.push([x,x*x/4]);}
+  fillReg([[-4,-3],[4,-3],[4,0],[-4,0]],C.red);
+  fillReg([[-4,0],[0,0],[0,5],[-4,5]],C.blue);
+  fillReg([[0,0],[4,0],[4,5],[0,5]],C.orange);
+  fillReg(par.filter(q=>q[0]<=0).concat([[0,5],[-4,5]]),C.blue);
+  fillReg(par.filter(q=>q[0]>=0).concat([[4,5],[0,5]]),C.orange);
+  pA.line([-4,4],[0,0],C.axis,1.3);pA.line([0,0],[-3,5],C.green,2.6);
+  pA.line(par.map(q=>q[0]),par.map(q=>q[1]),C.ink,1.8,[6,4]);
+  [['saddle',2.0,-1.7],['stable spiral',-1.9,3.9],['unstable spiral',1.9,3.9],['stable node',-3.0,1.0],['unstable node',3.0,1.0],['center line',0.75,4.6]].forEach(q=>pA.text(q[0],q[1],q[2],C.muted,{align:'center',size:12}));
+  const tr_=rootTrail.map(r=>[r[0],r[1]]);
+  pA.dot(t,d,C.red,8,'#fff');
+  // phase portrait
+  pB.begin();pB.axes({zero:true,xlabel:'x',ylabel:'v = ẋ'});
+  const ctx=pB.g;ctx.save();pB.clip();const L=Math.round(val('tl'));
+  P.forEach(p=>{const n=p.tr.length;for(let i=1;i<n;i++){const a=i/n;ctx.strokeStyle='rgba(0,114,189,'+(0.55*a*a).toFixed(3)+')';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(pB.X(p.tr[i-1][0]),pB.Y(p.tr[i-1][1]));ctx.lineTo(pB.X(p.tr[i][0]),pB.Y(p.tr[i][1]));ctx.stroke();}
+    ctx.fillStyle='rgba(0,114,189,.9)';ctx.beginPath();ctx.arc(pB.X(p.x),pB.Y(p.v),2.2,0,TAU);ctx.fill();});
+  ctx.restore();
+  if(S('eig').checked&&mode==='s'){for(let k=0;k<8;k++){const a=k*Math.PI/8;pB.line([-4*Math.cos(a),4*Math.cos(a)],[-4*Math.sin(a),4*Math.sin(a)],C.copper,1.2,[7,4]);}pB.text('every direction is an eigenvector',0,2.7,C.copper,{align:'center',size:12,bold:true});}
+  else if(S('eig').checked&&R.im[0]===0){R.re.forEach((lam,i)=>{const s=3/Math.max(1,Math.abs(lam)>1?1:1);pB.line([-3,3],[-3*lam,3*lam],C.copper,1.8,[7,4]);pB.text('λ = '+lam.toFixed(2),i?2.2:-2.9,i?2.2*lam:-2.9*lam,C.copper,{size:12,bold:true,dy:i?14:-12});});}
+  if(S('prb').checked){const pp=probePath();pB.line(pp.f.map(q=>q[0]),pp.f.map(q=>q[1]),C.red,2.4);pB.line(pp.b.map(q=>q[0]),pp.b.map(q=>q[1]),C.red,1.6,[2,4]);
+    const k=Math.max(0,Math.min(pp.f.length-1,Math.floor(tp/0.02)||0));pB.dot(pp.f[k][0],pp.f[k][1],C.red,6.5,'#fff');pB.ring(probe[0],probe[1],C.red,8);
+    // time panel
+    pD.begin();pD.axes({zero:true,xlabel:'t',ylabel:'x, v'});const ts=pp.f.map((_,i)=>i*0.02);pD.line(ts,pp.f.map(q=>q[0]),C.blue,2.6);pD.line(ts,pp.f.map(q=>q[1]),C.orange,2.2,[6,3]);pD.dot(tp,pp.f[k][0],C.blue,5.5,'#fff');pD.dot(tp,pp.f[k][1],C.orange,5.5,'#fff');}
+  else{pD.begin();pD.axes({zero:true,xlabel:'t',ylabel:'x, v'});}
+  const eqc=cls[1]==='stable'?C.blue:cls[1]==='unstable'?C.red:cls[1]==='neutral'?C.green:C.ink;
+  pB.dot(0,0,eqc,7,'#fff');
+  // s-plane
+  pC.begin();pC.axes({zero:true,xlabel:'Re λ',ylabel:'Im λ'});
+  pC.fill([-5,0,0,-5],[-3,-3,3,3],C.blue,0.07);pC.fill([0,5,5,0],[-3,-3,3,3],C.orange,0.07);
+  const xs=[],ys=[],xs2=[],ys2=[];rootTrail.forEach(r=>{xs.push(r[0][0]);ys.push(r[1][0]);xs2.push(r[0][1]);ys2.push(r[1][1]);});
+  pC.line(xs,ys,'#b9b5a8',2);pC.line(xs2,ys2,'#b9b5a8',2);
+  R.re.forEach((re,i)=>pC.dot(re,R.im[i],C.red,7,'#fff'));
+  pC.text('stable',-4.8,2.6,C.blue,{size:12,bold:true});pC.text('unstable',4.8,2.6,C.orange,{size:12,bold:true,align:'right'});
+  const f2=v=>(Math.abs(v)<5e-4?0:v).toFixed(3);
+  ro(S('ro'),[['Trace \\(\\tau\\), determinant \\(\\delta\\)',t.toFixed(2)+',  '+d.toFixed(2)],['Discriminant \\(\\tau^2-4\\delta\\)',(t*t-4*d).toFixed(2)],['Type',cls[0]],['System form',mode==='s'?TeX('\\dot x=\\lambda x,\\ \\dot y=\\lambda y'):TeX('\\ddot x-\\tau\\dot x+\\delta x=0')],['Stability',cls[1]],
+   ['Roots \\(\\lambda_1,\\ \\lambda_2\\)',R.im[0]===0?f2(R.re[0])+',  '+f2(R.re[1]):TeX(f2(R.re[0])+'\\pm'+f2(R.im[0])+'\\,i')],
+   ['Growth rate, largest \\(\\mathrm{Re}\\,\\lambda\\)',f2(Math.max(R.re[0],R.re[1]))],['Oscillation frequency \\(|\\mathrm{Im}\\,\\lambda|\\)',R.im[0]===0?'none':f2(Math.abs(R.im[0]))],
+   ['Area of a patch changes as',TeX('e^{\\tau t}=e^{'+t.toFixed(2)+'\\,t}')]]);
+}
+function step(dt){
+  const spd=val('spd'),n=Math.max(1,Math.ceil(dt*spd/0.01)),h=dt*spd/n,L=Math.round(val('tl'));
+  P.forEach(p=>{for(let i=0;i<n;i++){[p.x,p.v]=rk(p.x,p.v,h);}p.age+=dt;
+    if(Math.abs(p.x)>3.4||Math.abs(p.v)>3.4||p.age>p.life||!isFinite(p.x)){seed(p);}
+    p.tr.push([p.x,p.v]);while(p.tr.length>L)p.tr.shift();});
+  tp=(tp+dt*spd*1.0)%8;
+  if(tour){tourS+=dt*0.4*spd;param(3.4*Math.cos(tourS),1.5+2.8*Math.sin(tourS));}
+}
+let tour=false;
+bind(['tr','det'],()=>{mode='c';t=val('tr');d=val('det');rootTrail.push([roots().re.slice(),roots().im.slice()]);if(rootTrail.length>260)rootTrail.shift();draw();});
+bind(['spd','tl'],draw);S('eig').onchange=S('prb').onchange=draw;
+document.querySelectorAll('#gal button').forEach(b=>b.onclick=()=>{tour=false;S('tour').textContent='Tour all regions';const q=b.dataset.p.split(',');param(+q[0],+q[1],q[2]);rootTrail=[];draw();});
+S('tour').onclick=e=>{tour=!tour;e.target.textContent=tour?'Stop tour':'Tour all regions';if(tour){rootTrail=[];}};
+drag(S('ca'),pA,(x,y)=>{tour=false;S('tour').textContent='Tour all regions';param(Math.max(-4,Math.min(4,x)),Math.max(-3,Math.min(5,y)));draw();});
+drag(S('cb'),pB,(x,y)=>{probe=[Math.max(-3,Math.min(3,x)),Math.max(-3,Math.min(3,y))];tp=0;draw();});
+const ctl=animate(dt=>{step(dt);draw();});
+S('play').onclick=e=>{ctl.paused=!ctl.paused;e.target.textContent=ctl.paused?'Start flow':'Pause flow';};
+if(ctl.paused)S('play').textContent='Start flow';
+t=val('tr');d=val('det');rootTrail.push([roots().re.slice(),roots().im.slice()]);
+window.addEventListener('resize',draw);draw();
+})();
+</script>
+</body>
+</html>

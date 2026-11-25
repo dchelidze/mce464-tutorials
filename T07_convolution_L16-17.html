@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tutorial 7: Convolution as Superposition</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<link rel="stylesheet" href="assets/style.css">
+<style>.one{grid-template-columns:1fr !important}</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <nav class="tn"><a href="index.html">All tutorials</a><a href="T06_dissipation_nonlinear_frf_L15.html">&larr; Tutorial 6</a><a href="T08_fourier_filtering_L18.html">Next: Tutorial 8 &rarr;</a></nav>
+  <div class="kicker">MCE 464 &middot; Tutorial 7 &middot; Lectures 16&ndash;17</div>
+  <h1>Convolution as Superposition</h1>
+  <p class="lede">Any load is a train of tiny impacts. The response is the sum of the ringing each one leaves behind. Slide the evaluation time and see the flipped kernel sweep across the input.</p>
+</div></header>
+<div class="wrap">
+
+<h2>1. Two readings of one integral</h2>
+<p>For a system at rest, the response to an arbitrary load \(f(t)\) is the Duhamel integral</p>
+<div class="eqb">$$ x(t)=\int_0^t f(\tau)\,h(t-\tau)\,\mathrm d\tau,\qquad h(t)=\frac{e^{-\zeta\omega_n t}\sin\omega_d t}{m\,\omega_d} $$</div>
+<ul>
+  <li><b>Superposition view.</b> Cut the load into slices of width \(\mathrm d\tau\). The slice at time \(\tau\) is an impulse of size \(f(\tau)\,\mathrm d\tau\). It rings as \(f(\tau)\,\mathrm d\tau\;h(t-\tau)\) from that instant on. Add all the rings.</li>
+  <li><b>Weighting view.</b> Evaluate at one time \(t\). Flip \(h\) about \(\tau=t\), so that the instant of the response sits at \(\tau=t\) and its memory extends into the past. The response is the area under \(f\) multiplied by this flipped memory curve. Recent loads weigh most; old ones have decayed.</li>
+</ul>
+<p>Causality is the cut at \(\tau=t\): the future cannot affect the present, so the flipped kernel is zero to its right.</p>
+
+<div class="ctl">
+  <div><label>Input load \(f(\tau)\)
+    <select id="inp" class="gal"><option value="pulse">rectangular pulse</option><option value="step">step</option><option value="ramp">ramp and hold</option><option value="half">half-sine pulse</option><option value="imp">two short impacts (area 1 each)</option><option value="harm">sustained harmonic, near resonance</option></select></label></div>
+  <div><label>Damping ratio \(\zeta\)<output id="z_o"></output>
+    <input type="range" id="z" min="0.02" max="0.6" step="0.01" value="0.08"></label></div>
+  <div><label>Evaluation time \(t\) <span class="u">(units of \(1/\omega_n\))</span><output id="t_o"></output>
+    <input type="range" id="t" min="0" max="30" step="0.05" value="12" data-dp="2"></label></div>
+  <div><label>Time step \(\Delta t\) of the discrete convolution
+    <select id="dt" class="gal"><option value="0">off (reference only)</option><option value="2">2.0</option><option value="1">1.0</option><option value="0.5" selected>0.5</option><option value="0.25">0.25</option><option value="0.1">0.1</option></select></label></div>
+  <div><label class="chk"><input type="checkbox" id="half" checked> also show the result for \(\Delta t/2\) (refinement check)</label></div>
+  <div><button id="play">Sweep t</button></div>
+</div>
+
+<div class="figs one">
+  <div class="fig"><div class="ttl">1. Load \(f(\tau)\) (blue) and flipped kernel \(h(t-\tau)\) (orange)</div>
+    <canvas id="c1" data-ar="0.30"></canvas>
+    <div class="cap">Dots on stems: the load sampled on the grid \(\tau_k=k\,\Delta t\). Orange dots: the kernel samples \(h_{n-k}\) used at the grid time \(t_n\) nearest below \(t\). The kernel is zero for \(\tau>t\) (causality).</div></div>
+  <div class="fig"><div class="ttl">2. Product \(f(\tau)\,h(t-\tau)\): its area is \(x(t)\)</div>
+    <canvas id="c2" data-ar="0.30"></canvas>
+    <div class="cap">Dark green area = response at the chosen time (signed: negative parts subtract).</div></div>
+  <div class="fig"><div class="ttl">3. Response \(x(t)\)</div>
+    <canvas id="c3" data-ar="0.34"></canvas>
+    <div class="cap"><span class="sw" style="background:#0072BD"></span>reference: direct integration of \(\ddot x+2\zeta\dot x+x=f\) (RK4, fine step) &nbsp; <span class="sw" style="background:#D95319"></span>discrete convolution \(x_n=\Delta t\sum_{k=0}^{n}f_k\,h_{n-k}\) at \(t_n=n\,\Delta t\) &nbsp; <span class="sw" style="background:#67355C"></span>same with \(\Delta t/2\)</div></div>
+</div>
+<div class="figs">
+  <div class="fig"><div class="ttl">Read-out</div><table class="ro" id="ro"></table></div>
+  <div class="fig"><div class="ttl">What to notice</div>
+    <ol style="margin:4px 0 0 18px;padding:0">
+      <li>Drag \(t\) slowly. The orange kernel is a mirror image of the free decay, and it tows its own memory behind the evaluation time.</li>
+      <li>With \(\zeta\) small the kernel is long, so old loads still count. Raise \(\zeta\) and the area shrinks to the last few cycles.</li>
+      <li>Choose <b>two short impacts</b> (0.2 wide, height 5, area 1). The discrete sum only sees the load at the grid points. At \(\Delta t=2\) no grid point falls inside an impact, so the sum sees no load at all. At \(\Delta t=1\), 0.5 or 0.25 one sample lands on each impact and is counted as \(5\,\Delta t\) instead of 1. Only when \(\Delta t\) resolves the 0.2-wide impact (\(\Delta t=0.1\): two samples each) does the sum converge. This is the time-step error of Lecture 17: the grid must resolve the shortest feature of the load, and halving \(\Delta t\) must not change the answer.</li>
+      <li>Choose <b>step</b>: the response settles to the static value \(1/k\) (here 1) with overshoot set by \(\zeta\). The step response is the running integral of \(h\).</li>
+    </ol></div>
+</div>
+
+<h2>2. Check yourself</h2>
+<details><summary>Why does the upper limit of the integral stop at \(t\) and not at infinity?</summary>
+<p>\(h(t-\tau)=0\) for \(\tau>t\): a response cannot begin before its cause. Picture the orange curve: it is cut off to the right of the marker.</p></details>
+<details><summary>The input is a unit step. Show that \(x(t)\) is the area under \(h\) from \(0\) to \(t\).</summary>
+<p>With \(f=1\) the product is just \(h(t-\tau)\), and the substitution \(s=t-\tau\) turns the integral into
+$$ x(t)=\int_0^t h(s)\,\mathrm ds. $$
+The full area, \(t\to\infty\), is \(1/(m\omega_n^2)=1/k\): the static deflection.</p></details>
+<details><summary>What limits the accuracy of the discrete sum, and what is the rule of thumb?</summary>
+<p>The time step must resolve both the load and the kernel's oscillation. Use \(\Delta t\) well below the damped period \(2\pi/\omega_d\) (about a tenth of it or smaller) and below the shortest feature of \(f\). Check it the standard way: halve \(\Delta t\) and confirm the response does not change, and compare with a direct ODE integration.</p></details>
+
+<footer>Slides: Lecture 16 (ideal impulse, impulse response), Lecture 17 (Duhamel integral, causality, step response, discrete convolution, time-step error). Units: \(m=1\), \(\omega_n=1\). Labels inside the plots are plain text; the equations on the page are typeset with KaTeX.</footer>
+</div>
+
+<script src="assets/katex/katex.min.js"></script>
+<script src="assets/katex/auto-render.min.js"></script>
+<script src="assets/math.js"></script>
+<script src="assets/phonebar.js"></script>
+<script src="assets/layout.js"></script>
+<script src="assets/lib.js"></script>
+<script>
+(function(){
+const {ro,TeX,C,Plot,bind,val,animate}=TUT;
+const S=id=>document.getElementById(id);
+const T=30, dt0=0.02, N=Math.round(T/dt0);
+const mk=id=>new Plot(S(id),{pad:[52,14,10,34],xmin:0,xmax:T,ymin:-1,ymax:1});
+const p1=mk('c1'),p2=mk('c2'),p3=mk('c3');
+const INP={
+  pulse:s=>(s>=2&&s<6)?1:0, step:s=>s>=2?1:0, ramp:s=>s<2?0:Math.min(1,(s-2)/6),
+  half:s=>(s>=2&&s<6)?Math.sin(Math.PI*(s-2)/4):0,
+  imp:s=>((s>=3&&s<3.2)||(s>=9&&s<9.2))?5:0,
+  harm:s=>s>=2?Math.sin(0.9*(s-2)):0
+};
+let cache={key:'',F:null,hs:null,ex:null};
+function hfun(t,z){ if(t<=0) return 0; const wd=Math.sqrt(1-z*z); return Math.exp(-z*t)*Math.sin(wd*t)/wd; }
+// Reference response: direct integration of x'' + 2 z x' + x = f(t) (m = 1, k = 1, wn = 1), RK4 with step dt0/4,
+// stored on the dt0 grid. Independent of the convolution (lecture 17: ODE cross-check).
+function prep(){
+  const z=val('z'), inp=S('inp').value, key=inp+'|'+z;
+  if(cache.key===key) return;
+  const f=INP[inp], F=new Float64Array(N+1), hs=new Float64Array(N+1), ex=new Float64Array(N+1);
+  for(let i=0;i<=N;i++){F[i]=f(i*dt0);hs[i]=hfun(i*dt0,z);}
+  const sub=4,h=dt0/sub,rhs=(t,x,v)=>[v,f(t)-2*z*v-x];
+  let x=0,v=0,tt=0;ex[0]=0;
+  for(let j=1;j<=N;j++){for(let s=0;s<sub;s++){
+      const k1=rhs(tt,x,v),k2=rhs(tt+h/2,x+h/2*k1[0],v+h/2*k1[1]),k3=rhs(tt+h/2,x+h/2*k2[0],v+h/2*k2[1]),k4=rhs(tt+h,x+h*k3[0],v+h*k3[1]);
+      x+=h/6*(k1[0]+2*k2[0]+2*k3[0]+k4[0]);v+=h/6*(k1[1]+2*k2[1]+2*k3[1]+k4[1]);tt+=h;}
+    ex[j]=x;}
+  cache={key,F,hs,ex};
+}
+// Standard discrete convolution (lecture 17, slide 10): sample f and h on one grid t_k = k dt,
+// multiply by dt, causal indices:  x_n = dt * sum_{k=0..n} f_k h_{n-k}.
+function dconv(f,z,D){const n=Math.floor(T/D+1e-9),fk=new Float64Array(n+1),hk=new Float64Array(n+1),x=new Float64Array(n+1);
+  for(let k=0;k<=n;k++){fk[k]=f(k*D);hk[k]=hfun(k*D,z);}
+  for(let m=0;m<=n;m++){let s=0;for(let k=0;k<=m;k++)s+=fk[k]*hk[m-k];x[m]=D*s;}
+  return {n,D,fk,hk,x};}
+function draw(){
+  prep();
+  const z=val('z'),t=val('t'),inp=S('inp').value,f=INP[inp],D=+S('dt').value,{F,hs,ex}=cache;
+  const jt=Math.min(N,Math.round(t/dt0)), tx=jt*dt0;
+  const dc=D>0?dconv(f,z,D):null, dh=(D>0&&S('half').checked)?dconv(f,z,D/2):null;
+  const ref=q=>{const u=Math.min(N,Math.max(0,q/dt0)),i=Math.min(N-1,Math.floor(u)),w=u-i;return ex[i]*(1-w)+ex[i+1]*w;};
+  let fmax=0;for(let i=0;i<=N;i++)fmax=Math.max(fmax,Math.abs(F[i]));
+  let hmax=0;for(let i=0;i<=N;i++)hmax=Math.max(hmax,Math.abs(hs[i]));
+  let xm=0;for(let i=0;i<=N;i++)xm=Math.max(xm,Math.abs(ex[i]));
+  const ts=[],ker=[],prod=[];
+  for(let i=0;i<=jt;i++){ts.push(i*dt0);ker.push(hs[jt-i]);prod.push(F[i]*hs[jt-i]);}
+  const yt=Math.max(1.2,fmax*1.12);
+  // panel 1: load, flipped kernel, and the samples used by the discrete sum
+  p1.set({ymin:-1.1*Math.max(hmax,0.3),ymax:yt}); p1.begin(); p1.axes({zero:true,ylabel:'f, h',xticks:[0,5,10,15,20,25,30]});
+  const all=[],allf=[];for(let i=0;i<=N;i+=2){all.push(i*dt0);allf.push(F[i]);}
+  p1.line(all,allf,C.blue,2.2);
+  p1.line(ts,ker,C.orange,2.4);
+  let nt=-1;
+  if(dc){nt=Math.min(dc.n,Math.floor(tx/D+1e-9));
+    // marker size follows the grid spacing on screen; on a fine grid use small solid dots so the curves stay visible
+    const px=Math.abs(p1.X(D)-p1.X(0)),fine=px<9,r=fine?Math.max(1,Math.min(1.8,px/3.5)):3.3;
+    const mk=(q,y,col)=>{if(fine){const g=p1.g;g.fillStyle=col;g.beginPath();g.arc(p1.X(q),p1.Y(y),r,0,2*Math.PI);g.fill();}else p1.dot(q,y,col,r,'#fff');};
+    for(let k=0;k<=dc.n;k++){const q=k*D;if(dc.fk[k]!==0){p1.line([q,q],[0,dc.fk[k]],C.blue,fine?0.8:1.2);mk(q,dc.fk[k],C.blue);}else if(!fine)mk(q,0,C.blue);}
+    for(let k=0;k<=nt;k++)mk(k*D,dc.hk[nt-k],C.orange);
+    p1.line(ts,ker,C.orange,2.4);}
+  p1.line([tx,tx],[-5,5],C.red,1.5,[5,4]); p1.text('t',tx,yt*0.9,C.red,{dx:6,bold:true});
+  // panel 2: the integrand; its area is x(t)
+  const pm=Math.max(fmax*hmax,0.2)*1.1;
+  p2.set({ymin:-pm,ymax:pm}); p2.begin(); p2.axes({zero:true,ylabel:'f · h',xticks:[0,5,10,15,20,25,30]});
+  p2.fill([0].concat(ts,[tx]),[0].concat(prod,[0]),C.green,0.38);
+  p2.line(ts,prod,C.green,2);
+  p2.line([tx,tx],[-50,50],C.red,1.5,[5,4]);
+  p2.text('area = '+ex[jt].toFixed(3),T-0.5,pm*0.8,C.green,{align:'right',bold:true,size:14});
+  // panel 3: reference and discrete convolution at the grid points
+  let dm=0;if(dc)for(let k=0;k<=dc.n;k++)dm=Math.max(dm,Math.abs(dc.x[k]));
+  const ym=Math.max(Math.max(xm,Math.min(dm,4*xm))*1.2,0.3);
+  p3.set({ymin:-ym,ymax:ym}); p3.begin(); p3.axes({zero:true,xlabel:'τ,  t   (time in units of 1/ωn)',ylabel:'x',xticks:[0,5,10,15,20,25,30]});
+  const tt=[];for(let i=0;i<=N;i+=2)tt.push(i*dt0);
+  p3.line(tt,tt.map(ref),'#a9cde6',2);
+  p3.line(tt.filter(q=>q<=tx),tt.filter(q=>q<=tx).map(ref),C.blue,3);
+  p3.clip();
+  if(dh){const xs=[],ys=[];for(let k=0;k<=dh.n;k++){xs.push(k*dh.D);ys.push(dh.x[k]);}p3.line(xs,ys,C.plum,1.4,[2,3]);if(dh.n<=150)for(let k=0;k<=dh.n;k++)p3.dot(xs[k],ys[k],C.plum,2.4,'#fff');}
+  let err=0,errH=0;
+  if(dc){const xs=[],ys=[];for(let k=0;k<=dc.n;k++){xs.push(k*D);ys.push(dc.x[k]);err=Math.max(err,Math.abs(dc.x[k]-ref(k*D)));}
+    p3.line(xs,ys,C.orange,1.8,[6,4]);if(dc.n<=150)for(let k=0;k<=dc.n;k++)p3.dot(xs[k],ys[k],C.orange,3.4,'#fff');
+    if(dh)for(let k=0;k<=dc.n;k++)errH=Math.max(errH,Math.abs(dc.x[k]-dh.x[2*k]));}
+  p3.unclip();
+  p3.dot(tx,ex[jt],C.red,6,'#fff');
+  const wd=Math.sqrt(1-z*z),Td=2*Math.PI/wd;
+  const rows=[['Evaluation time \\(t\\)',tx.toFixed(2)],['Reference \\(x(t)\\) (direct ODE integration)',ex[jt].toFixed(4)],['Damped period \\(2\\pi/\\omega_d\\)',Td.toFixed(2)],['Kernel decays to 2% in',(3.9/z).toFixed(1)+' time units, '+TeX('4/(\\zeta\\omega_n)')]];
+  if(dc){const pc=e=>e.toFixed(4)+'  ('+(100*e/Math.max(xm,1e-9)).toFixed(1)+' % of peak)';
+    rows.push(['Grid time \\(t_n\\) nearest below \\(t\\)',TeX('n='+nt+',\\ t_n='+(nt*D).toFixed(2))],
+      ['\\(x_n\\) (discrete convolution) vs reference',dc.x[nt].toFixed(4)+'  vs  '+ref(nt*D).toFixed(4)],
+      ['Largest error at the grid points',pc(err)],
+      ['Steps per damped period',TeX('2\\pi/(\\omega_d\\Delta t)='+(Td/D).toFixed(1))]);
+    if(dh)rows.push(['Largest change when \\(\\Delta t\\) is halved',pc(errH)]);}
+  ro(S('ro'),rows);
+}
+bind(['z','t'],draw);S('inp').addEventListener('change',draw);S('dt').addEventListener('change',draw);S('half').addEventListener('change',draw);
+const ctl=animate(dt=>{let t=val('t')+3*dt;if(t>T)t=0;S('t').value=t;S('t_o').textContent=t.toFixed(2);draw();});
+ctl.paused=true;
+S('play').addEventListener('click',e=>{ctl.paused=!ctl.paused;e.target.textContent=ctl.paused?'Sweep t':'Pause';});
+window.addEventListener('resize',draw);
+draw();
+})();
+</script>
+</body>
+</html>

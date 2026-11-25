@@ -130,7 +130,9 @@
       o = o || {}; const g = this.g; g.save();
       g.font = (o.bold ? '700 ' : '') + (o.italic ? 'italic ' : '') + (o.size || 13) + 'px -apple-system,Helvetica,Arial,sans-serif';
       g.fillStyle = color || C.ink; g.textAlign = o.align || 'left'; g.textBaseline = o.base || 'middle';
-      g.fillText(s, this.X(x) + (o.dx || 0), this.Y(y) + (o.dy || 0)); g.restore();
+      const tx = this.X(x) + (o.dx || 0), ty = this.Y(y) + (o.dy || 0);
+      if (o.halo) { g.lineJoin = 'round'; g.lineWidth = o.halo; g.strokeStyle = o.haloColor || '#fffdf8'; g.strokeText(s, tx, ty); }   // optional outline keeps a label legible over drawn members
+      g.fillText(s, tx, ty); g.restore();
     }
     // arc about (cx,cy) in data units from angle a0 to a1 (radians, data-space orientation)
     arc(cx, cy, r, a0, a1, color, lw, dash) {
